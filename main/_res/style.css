@@ -1,0 +1,15 @@
+body>div>div
+{
+	width: 150px;
+	text-align: center;
+}
+
+img
+{
+	width: 100%;
+}
+
+body>div
+{
+	display: flex;
+}
