@@ -23,63 +23,66 @@ function main()
 	var imgs = [];
 	var correctWord = Math.trunc(Math.random()*3);
 	console.log(words[correctWord]);
+	if(score < 4)
+	{
 	for(var i = 0; i < 3; i++)
-	{
-		var div = document.createElement("div");
-		container.appendChild(div);
-		
-		var label = document.createElement("label");
-		
-		
-		var img = document.createElement("img");
-		imgs.push(img);
-		console.log(imgs);
-		var inp = document.createElement("input");
-		inps.push(inp);
-		inp.type = "radio";
-		inp.name = "choice";
-		inp.value = words[i];
-		console.log (i + words[i]);
-		img._name = words[i];
-		img.src = `/_res/${words[i]}.jpg`;
-		//div.appendChild(img);
-		div.appendChild(label);
-		label.appendChild(img);
-		label.appendChild(inp);
-		//div.appendChild(inp);
-		img.addEventListener (
-			'click',
-			function(e)
-			{
-				img.onclick = undefined;
-				var p = document.createElement("p");
-				p.className = "photo-caption";
-				p.textContent = e.target._name;
-				//console.log(e.target.parentElement);
-				e.target.parentElement.appendChild(p);
-				console.log(e.target.src);
-			}
-		);
-	}
-	var button = document.createElement("button");
-	document.body.appendChild(button);
-	button.textContent = "Check";
-	button.onclick = function() 
-	{
-		if(inps[correctWord].checked)
 		{
-			incrementScore();
-			correctWord = Math.trunc(Math.random()*3);
-			console.log(words[correctWord+3]);
-			console.log("correct");
-			for(var i = 0; i < 3; i++ )
-			{
-				imgs[i].src = `/_res/${words[i+3]}.jpg`;
-			}
+			var div = document.createElement("div");
+			container.appendChild(div);
+			
+			var label = document.createElement("label");
+			
+			
+			var img = document.createElement("img");
+			imgs.push(img);
+			console.log(imgs);
+			var inp = document.createElement("input");
+			inps.push(inp);
+			inp.type = "radio";
+			inp.name = "choice";
+			inp.value = words[i];
+			console.log (i + words[i]);
+			img._name = words[i];
+			img.src = `/_res/${words[i]}.jpg`;
+			//div.appendChild(img);
+			div.appendChild(label);
+			label.appendChild(img);
+			label.appendChild(inp);
+			//div.appendChild(inp);
+			img.addEventListener (
+				'click',
+				function(e)
+				{
+					img.onclick = undefined;
+					var p = document.createElement("p");
+					p.className = "photo-caption";
+					p.textContent = e.target._name;
+					//console.log(e.target.parentElement);
+					e.target.parentElement.appendChild(p);
+					console.log(e.target.src);
+				}
+			);
 		}
-		else
+		var button = document.createElement("button");
+		document.body.appendChild(button);
+		button.textContent = "Check";
+		button.onclick = function() 
 		{
-			console.log("not correct");
+			if(inps[correctWord].checked)
+			{
+				incrementScore();
+				correctWord = Math.trunc(Math.random()*3);
+				console.log(words[correctWord+3]);
+				console.log("correct");
+				for(var i = 0; i < 3; i++ )
+				{
+					imgs[i].src = `/_res/${words[i+3]}.jpg`;
+				}
+			}
+			else
+			{
+				console.log("not correct");
+			}
 		}
 	}
 }

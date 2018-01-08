@@ -32,3 +32,4 @@ if($command == "increment-score")
 
 $db->close();
 ?>
+

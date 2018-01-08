@@ -107,13 +107,13 @@ print("$score\n");
 </pre>
 
 <svg width="500" height="200" style="border: dotted 1px">
-	<rect x="10" y="10" width="<?php print($score*30); ?>" height="30" fill="rgb(0,128,0)"/>	
+	<rect x="10" y="10" width="<?php print($score*30); ?>" height="30" fill="rgb(255,0,0)"/>	
 <?php
 
 for ($i=0; $i < $score; ++$i)
 {
 	$x = $i * 40 + 10;
-	print ("	<rect x=\"$x\" y=\"60\" width=\"30\" height=\"30\" fill=\"rgb(0,128,0)\" />\n");
+	print ("	<rect x=\"$x\" y=\"60\" width=\"30\" height=\"30\" fill=\"rgb(255,0,0)\" />\n");
 }
 
 ?>
