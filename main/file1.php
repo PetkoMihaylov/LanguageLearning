@@ -3,15 +3,33 @@
 <head>
 	<!--<script src="/_res/js.js"></script>-->
 	<link rel="stylesheet" href="/_res/style.css">
+	<script src="/audio.js"></script>
 </head>
 <body>
+<div class="voiceaudio">
+
+      <select name="voice" id="voices">
+        <option value="">Voice:</option>
+      </select>
+
+      <label for="rate">Speed:</label>
+      <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
+
+      <label for="pitch">Pitch:</label>
+
+      <input name="pitch" type="range" min="0" max="2" step="0.1">
+      <textarea name="text">Hello! I love JavaScript ??</textarea>
+      <button id="stop">Stop!</button>
+      <button id="speak">Speak</button>
+
+    </div>
 <pre>
 <?php
 
 $words = array(
    "blue"=>["Синьо", "Син"],
    "building"=>["Сграда"], 
-   "horse"=>["Кон"],
+   "horse"=>["Кон", "Конче"],
    "rabbit"=>["Заек", "Зайче"],
    "I was out today."=>["Бях навън днес.", "Днес бях навън.", "Навън бях днес."]
 );
@@ -75,11 +93,40 @@ if(isset($_POST["input"]))
 		$sim = similar_text($answer, $input, $percent);
 		//check if percent is big enough, then check
 		$word_count = str_word_count($answer, 0);
+		$text = "Bonjour, comment allez vous ?";
+// Yes French is a beautiful language.
+$lang = "fr";
+
+// MP3 filename generated using MD5 hash
+// Added things to prevent bug if you want same sentence in two different languages
+$file = md5($lang."?".urlencode($text));
+
+// Save MP3 file in folder with .mp3 extension 
+$file = "audio/" . $file . ".mp3";
+
+
+// Check folder exists, if not create it, else verify CHMOD
+if (!is_dir("audio/"))
+	mkdir("audio/");
+else
+	if (substr(sprintf('%o', fileperms('audio/')), -4) != "0777")
+		chmod("audio/", 0777);
+
+
+// If MP3 file exists do not create new request
+if (!file_exists($file))
+{
+	// Download content
+	$mp3 = file_get_contents(
+	'http://translate.google.com'. urlencode($text) .'&tl='. $lang .'&total=1&idx=0&textlen=5&prev=input');
+	file_put_contents($file, $mp3);
+}
+	
 		if($word_count == 1)
 		{
 			if($sim < 4)
 			{
-				//not a mistake
+				//mistake
 			}
 			else 
 			{
@@ -92,7 +139,7 @@ if(isset($_POST["input"]))
 		{
 			//check the strlen of both input and answers every time
 			//check word by word to see if there is a typo in some word
-			//then
+			//thsen
 		}
 		
 		print("<br><br><br>$percent<br><br><br>");
