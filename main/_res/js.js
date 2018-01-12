@@ -1,19 +1,26 @@
 "use strict";
 
-function incrementScore()
+function sendCommand(command, callback)
 {
+	console.log(command);
 	var request = new XMLHttpRequest();
 	request.onload = function(e){
 		console.log(e.target.response);
+		callback(e.target.response);
 	}
-	
+
 	request.open("POST", "/api.php", true);
-	//request.responseType = "json";
+	request.responseType = "json";
 	//request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	request.send("increment-score");	
+	request.send(JSON.stringify(command));
 }
 
-function main()
+function incrementScore()
+{
+	sendCommand(["increment-score"]);
+}
+
+function notmain()
 {
 	var container = document.createElement("div");
 	document.body.appendChild(container);
@@ -23,8 +30,8 @@ function main()
 	var imgs = [];
 	var correctWord = Math.trunc(Math.random()*3);
 	console.log(words[correctWord]);
-	if(score < 4)
-	{
+	//if(score < 4)
+	//{
 	for(var i = 0; i < 3; i++)
 		{
 			var div = document.createElement("div");
@@ -84,6 +91,66 @@ function main()
 				console.log("not correct");
 			}
 		}
+	//}
+}
+
+function getWord(state)
+{
+	sendCommand(
+		["get-word"],
+		function(response)
+		{
+			state.phrase = response;
+		}
+	);
+}
+
+function callback(state, response)
+{
+	var div = document.createElement("div");
+	div.className = "correctionbar";
+	document.body.appendChild(div);
+	if(response.result)
+	{
+		div.className += " correct"; //
+		div.textContent = "You are correct";
+	}
+	else
+	{
+		div.className += " incorrect";
+		div.textContent = "You are not correct";
+	}
+	var button = document.createElement("button");
+	div.appendChild(button);
+	button.textContent="Continue";
+	button.onclick = function()
+	{
+		getWord(state);
+	}
+	
+}
+
+function main()
+{
+	var state = {};
+	state.phrase = undefined;
+	
+	playAudio(state);
+	
+	getWord(state);
+	
+	var form = document.getElementById('userInputTest');
+	var input = form.getElementsByTagName('input')[0];
+	form.onsubmit = function(event){
+		event.preventDefault(); //always first
+		sendCommand(
+			["check-word", state.phrase, input.value],
+			function (response)
+			{
+				callback (state, response);
+			}
+		);
 	}
 }
+
 window.onload = main;

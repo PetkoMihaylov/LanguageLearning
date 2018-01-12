@@ -34,7 +34,7 @@ $db = new mysqli("localhost", "root", "root", "words");
 					  //poshta
 					  //snimka
 					  //??-priqteli
-					  
+					  //
 //diskusiq, kato forum,
 if(!$table)
 {
