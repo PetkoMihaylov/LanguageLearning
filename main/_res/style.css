@@ -3,7 +3,10 @@ body>div>div
 	width: 150px;
 	text-align: center;
 }
-
+body
+{
+	font-family: times;
+}
 img
 {
 	width: 100%;

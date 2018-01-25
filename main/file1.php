@@ -3,43 +3,30 @@
 <head>
 	<!--<script src="/_res/js.js"></script>-->
 	<link rel="stylesheet" href="/_res/style.css">
-	<script src="/audio.js"></script>
-	<script src="/_res/js.js"></script>
 </head>
 <body>
-<div class="voiceaudio">
-
-      <select name="voice" id="voices">
-        <option value="">Voice:</option>
-      </select>
-
-      <label for="rate">Speed:</label>
-      <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
-
-      <label for="pitch">Pitch:</label>
-
-      <input name="pitch" type="range" min="0" max="2" step="0.1">
-      <button id="stop">Stop!</button>
-      <button id="speak">Speak</button>
-
-    </div>
 <pre>
 <?php
+$words = array(
+   //"blue"=>["Синьо", "Син"],
+   "building"=>["Сграда"],
+   "horse"=>["Кон", "Конче"],
+   "rabbit"=>["Заек", "Зайче"],
+   "I was out today."=>["Бях навън днес.", "Днес бях навън.", "Навън бях днес."]
+);
 
-/*if(isset($_POST["input"]))
+if(isset($_POST["input"]))
 {
 	$input = $_POST["input"];
 	$score = $_POST["score"];
-	$correct_word = $_POST["correct_word"];
+	$phrase = $_POST["correct_word"];
 	print("$input | ");
-	print("$correct_word | ");
-	*/
+	print("$phrase | ");
 	/*reset($words);
 	while(list($key, $value) = each($words))
 	{
 			echo "Key: $key; Value: $value<br />\n";
 	}
-
 	foreach ($arr as $key => $value) 
 	{
 		echo "Key: $key; Value: $value<br />\n";
@@ -60,62 +47,153 @@
 	
 	
 	
-	//print("$input | ");
+	print("$input | ");
 	
-/*	
-		$text = "Bonjour, comment allez vous ?";
-// Yes French is a beautiful language.
-$lang = "fr";
-
-// MP3 filename generated using MD5 hash
-// Added things to prevent bug if you want same sentence in two different languages
-$file = md5($lang."?".urlencode($text));
-
-// Save MP3 file in folder with .mp3 extension 
-$file = "audio/" . $file . ".mp3";
-
-
-// Check folder exists, if not create it, else verify CHMOD
-if (!is_dir("audio/"))
-	mkdir("audio/");
-else
-	if (substr(sprintf('%o', fileperms('audio/')), -4) != "0777")
-		chmod("audio/", 0777);
-
-
-// If MP3 file exists do not create new request
-if (!file_exists($file))
-{
-	// Download content
-	/*$mp3 = file_get_contents(
-	'http://translate.google.com'. urlencode($text) .'&tl='. $lang .'&total=1&idx=0&textlen=5&prev=input');
-	file_put_contents($file, $mp3);*/
-//}
+	stripslashes($input);
+	//$input = preg_replace(")", "", $input);
+	//($GLOBALS['ctormv'], $GLOBALS['contplace'], $input);
+	//$input = preg_replace('/\./', '', $input);
+	$input = preg_replace('/ ,/', '', $input);
+	$input = preg_replace('/\./', '', $input);
+	$input = trim($input);
+	$input = preg_replace ('/ +/', ' ', $input);
+	$input = preg_replace("/[^[:alnum:][:space:]]/u", '', $input);
+	$input = mb_strtolower($input,  mb_detect_encoding($input));
+	$input = preg_replace('/\s+\./', '.', $input);
+	//$input = str_replace(array(' .',' ,'),array('.',','), $input);
+	/* if($input != null)
+	{
+		str_replace(array(".", "", $input);
+	} */
+	$answers = $words[$phrase];
 	
+	for($i = 0; $i < count($answers); $i++)
+	{
+		$typo = 0;
+		$answer = $answers[$i];
+		$answer = preg_replace("/[^[:alnum:][:space:]]/u", '', $answer);
+		$answer = mb_strtolower($answer,  mb_detect_encoding($answer));
+		$sim = similar_text($answer, $input, $percent);
 		
-	//print_r($a[$i]);
+		//check if percent is big enough, then check
+		
+		/*$pizza  = "piece1 piece2 piece3 piece4 piece5 piece6";
+		$pieces = explode(" ", $pizza);*/
+		/* if($word_count == 1)
+		{
+			if($sim < 4)
+			{
+				//mistake
+			}
+			else 
+			{
+				//typo
+			}
+		}
+		else if($word_count == 2)
+		{
+			//print($input . " | " . $answer );
+			//$printer = "you shall pass";
+			//$inputWords = explode(" ", $input);
+			//$answerWords = explode(" ", $answer);
+			/* for($i = 0; i < count(answerWords); i++)
+			{
+				print($answerWords[i]);
+			} */
+			//check the strlen of both input and answers every time
+			//check word by word to see if there is a typo in some word
+			//thsen
+		//}
+
+		print("<br><br>$answer | $input <br><br>");
+		$sim = similar_text($answer, $input, $percent);
+		//check if percent is big enough, then check
+		//print("<br>$word_count[0]<br>");
+		/* $word_count_input = str_word_count($input, 0);
+		$word_count = mb_str_word_count($answer, 1);
+		print("<br> $word_count[0]<br>");*/
+		$answerWords = explode(" ", $answer);
+		$inputWords = explode(" ", $input);
+		//print($answerWords[0]);
+		if(count($answerWords) == 1)
+		{
+			if($sim < 4)
+			{
+				//mistake
+			}
+			else 
+			{
+				//typo
+			}	
+		}
+		else if(count($answerWords) > 1)
+		{
+			
+			
+			for($i = 0; $i < count($answerWords); $i++)
+			{
+				print("<br>$answerWords[$i] => $inputWords[$i]<br>");
+				$sim = similar_text($answerWords[$i], $inputWords[$i], $percent);
+				if($answerWords[$i] == $inputWords[$i])
+				{
+					//correct word
+					print("all is good=>$percent");
+				}
+				else
+				{
+					print("typo");
+					$typo++;
+					//not correct the current word
+					//print it in the create div UNDERLINED____
+				}
+			}
+			//check the strlen of both input and answers every time
+			//check word by word to see if there is a typo in some word
+			//then
+		}
+		
+		print("<br><br><br>$percent<br><br><br>");
 	
+	/*if(value != $input)
+	{
+		$value = array_shift($answer);
+		//continue;
+	}*/
+	
+		if($input == $answer)
+		{
+			//print("correct\n");
+			print("correct");
+			$score ++;
+			//print(")
+		}
+			//print($a[$i]);
+	}
+	//print_r($a[$i]);
+	$michael = "Michael";
+	$michaela = "Michael  ";
+	$sim = similar_text($michael, $michaela, $percent);
+	print("<br>$percent || $sim<br>");
 	//echo $words[0]['$correct_word'];
 	/*for ($i = 0; $i < count($words); $i++) 
 	{
-	}
-	*/
-/*	
-	$pizza  = "piece1 piece2 piece3 piece4 piece5 piece6";
-	$pieces = explode(" ", $pizza);
-	//to analyze word by word
+	}*/
+	
+	
+	
 }
 else
 {
 	$score = 0;
 }
-*/
-
+$word = array_rand ($words);
+print("$word | \n");
+$curr_word = $word;
+print("$score\n");
 ?>
-
 </pre>
-<form id="userInputTest" action="file1.php" method="POST">
-	<input type="text" name="input" title="конче"/>
+<form action="file1.php" method="POST">
+	<input type="text" name="input"/>
 	<input type="hidden" name="correct_word" value="<?php print($word); ?>"/>
 	<input type="hidden" name="score" value="<?php print($score); ?>"/>
 	<button type="submit">Провери</button>
