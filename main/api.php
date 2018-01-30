@@ -20,6 +20,16 @@ $incorrect_words = [
 //protected $ctormv = ('/ ,/' , '/= /', '/ =/', '/ -/', '/- /');
 //protected $contplace = ('', '', '', '', '');
 
+function dbConnect()
+{
+	$db = new mysqli("localhost", "root", "root", "words");
+	if(!$db)
+	{
+		print($db->error);
+	}
+	return $db;
+}
+
 function dbInit()
 {
 	$db = new mysqli("localhost", "root", "root");
@@ -47,25 +57,29 @@ function dbInit()
 					   email VARCHAR(255),
 					   language VARCHAR(30) NOT NULL,
 					   points INTEGER NOT NULL,
+					   score INTEGER NOT NULL,
 					   days_played INTEGER NOT NULL,
-					   last_day_played DATE
-					   
-					   )
+					   last_day_played DATE,
+					   level INTEGER NOT NULL,
+					   sublevel INTEGER NOT NULL)
 					   ");
-					   //Нива и раздели!!!!
 	if (!$users)
 	{
 		print($db->error);
 	}
+	//
    $phrases = $db->query("Create table phrases(
-						  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-						  phrase VARCHAR(256))");
+						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+						phrase VARCHAR(256),
+						level INTEGER NOT NULL,
+						sublevel INTEGER NOT NULL)
+						");
 	if (!$phrases)
 	{
 		print("Phrases:\n");
 		print($db->error);
 	}
-
+	
 	$answers = $db->query("Create table answers(
 	                       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						   answer VARCHAR(256) NOT NULL,
@@ -76,14 +90,17 @@ function dbInit()
 		print($db->error);
 		print("\n");
 	}
-
+	
  	$comments = $db->query("Create table comments(
 						   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						   userID INT NOT NULL,
 						   FOREIGN KEY (userID) REFERENCES users(id),
 						   phraseID INT NOT NULL,
 						   FOREIGN KEY (phraseID) REFERENCES phrases(id),
-						   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)");
+						   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+						   photo VARCHAR(256))
+						   ");
+						   //phraseID how it can connect to the name of the phrase
 	// snimka, priqteli, diskusiq, kato forum,
 	if (!$comments)
 	{
@@ -128,6 +145,27 @@ function getWordCheckbox($words, $incorrect_words)
 	$result = ["correct_answers"=>$correct_answers,
 			   "incorrect_answers"=>$incorrect_answers];
 	return $result;
+}
+
+function addPhrase($phrase, $answers)
+{
+	print($phrase);
+	print_r($answers);
+	$db = dbConnect();
+	//check  if phrase already exists;
+	//update
+	
+	$phrase = $db->real_escape_string ($phrase);
+	$add_phrase = $db->query("INSERT INTO phrases(phrase) VALUES('$phrase')");
+	$phrase_id = $db->insert_id;
+	print($db->error);
+	for($i = 0; $i < count($answers); $i++)
+	{
+		$answer = $db->real_escape_string ($answers[$i]);
+		$add_answers = $db->query("INSERT INTO answers(answer, phraseId) VALUES('$answer', $phrase_id)");
+	}
+	
+	$db->close();
 }
 
 function checkPhrase($words, $phrase, $input, $printer)
@@ -270,6 +308,17 @@ else if($command[0] == "get-words-checkbox")
 {
 	$result = getWordCheckbox($words, $incorrect_words);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "add-phrase")
+{
+	$phrase = $command[1];
+	$level = $command[2];
+	$sublevel = $command[3];
+	for($i = 0; $i < 4; $i++)
+	{
+		array_shift($command);
+	}
+	addPhrase($phrase, $level, $sublevel, $command);
 }
 else
 {

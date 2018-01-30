@@ -1,11 +1,18 @@
-"use strict";
+﻿"use strict";
 
 function sendCommand(command, callback, json=true)
 {
 	console.log(command);
 	var request = new XMLHttpRequest();
 	request.onload = function(e){
-		callback(e.target.response);
+		if(callback)
+		{
+			callback(e.target.response);
+		}
+		else
+		{
+			console.log(e.target.response);
+		}
 	}
 
 	request.open("POST", "/api.php", true);
@@ -64,7 +71,7 @@ function callback(state, response)
 	
 }
 
-function makeCheckboxes(answers)
+function makeCheckboxes(answers, div)
 {
 	var correct_answers = answers.correct_answers;
 	var incorrect_answers = answers.incorrect_answers;
@@ -72,7 +79,7 @@ function makeCheckboxes(answers)
 	shuffle(mixed_answers);
 	console.log(mixed_answers);
 	var form = document.createElement("form");
-	document.body.appendChild(form);
+	div.appendChild(form);
 	var ul = document.createElement("ul");
 	form.appendChild(ul);
 	var checkboxes = [];
@@ -160,13 +167,102 @@ function shuffle(array)
 
 function main()
 {
-	sendCommand(["get-words-checkbox"], makeCheckboxes);
+	sendCommand(["init-db"], function(r) {console.log (r);}, false);
+	var div = document.createElement("div");
+	document.body.appendChild(div);
+	var button = document.createElement("button");
+	document.body.appendChild(button);
+	button.innerText = "Next";
+	
+	var exercises = [notmaintwo, notmaintwo, addPhrasesMode, addPhrasesMode, checkboxes, checkboxes];
+	shuffle(exercises);
+	
+	button.onclick = function(){
+		div.innerHTML = "";
+    	var exercise = exercises.pop();
+		if (exercises.length == 0) {
+			button.innerText = "Finish";
+			//button.parentNode.removeChild (button);
+		}
+		if(exercise)
+		{
+			exercise(div);
+		}
+		else
+		{
+			document.body.innerHTML = "";
+		}
+	}
+	
+	exercises.pop()(div);
+}
+
+function addPhrasesMode(div)
+{
+	var form = document.createElement("form");
+	var phraseInput = document.createElement("input");
+	phraseInput.id = "phraseInput";
+	var answerInputs = [document.createElement("input")];
+	var button = document.createElement("button");
+	var levelInput = document.createElement("input");
+	var subLevelInput = document.createElement("input");
+	var divB = document.createElement("div");
+	var formB = document.createElement("form");
+	var phraseLabel = document.createElement("label");
+	phraseLabel.setAttribute("for", phraseInput);
+	phraseLabel.innerHTML = "Phrase: ";
+	document.body.appendChild(divB);
+	formB.appendChild(levelInput);
+	formB.appendChild(subLevelInput);
+	divB.appendChild(formB);
+	
+	button.type = "submit";
+	button.innerText = "check";
+	div.appendChild(form);
+	form.appendChild(button);
+	form.appendChild(phraseLabel);
+	form.appendChild(phraseInput);
+	form.appendChild(answerInputs[0]);
+	phraseInput.required = true;
+	levelInput.required = true;
+	subLevelInput.required = true;
+	
+	function addAnswerInput(event){
+		var newAnswerInput = document.createElement("input");
+		form.appendChild(newAnswerInput);
+		event.target.oninput = undefined;
+		newAnswerInput.oninput = addAnswerInput;
+		answerInputs.push(newAnswerInput);
+	}
+	
+	answerInputs[0].oninput = addAnswerInput;
+	
+	form.onsubmit = function(event){
+		event.preventDefault();
+		var answers = [];
+		for(var i = 0; i < answerInputs.length; i++)
+		{
+			if(answerInputs[i].value)
+			{
+				answers.push(answerInputs[i].value);
+			}
+		}
+		if(answers.length == 0) return;
+		console.log(answers);
+		sendCommand(["add-phrase", phraseInput.value, levelInput, subLevelInput].concat(answers), undefined, false);
+	}
+}
+
+
+function checkboxes(div)
+{
+	sendCommand(["get-words-checkbox"], function (r){makeCheckboxes(r,div)});
 	
 }
 
-function notmaintwo()
+function notmaintwo(div)
 {
-	sendCommand(["init-db"], function(r) {console.log (r);}, false);
+	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
 	var state = {};
 	state.phrase = undefined;
 	
@@ -174,8 +270,9 @@ function notmaintwo()
 	
 	getWord(state);
 	
-	var form = document.getElementById('userInput');
-	var input = form.getElementsByTagName('input')[0];
+	var form = document.createElement("form");
+	div.appendChild(form);
+	var input = document.createElement("input");
 	form.onsubmit = function(event){
 		event.preventDefault(); //always first
 		sendCommand(
@@ -187,14 +284,26 @@ function notmaintwo()
 		);
 	};
 	
-	var registerForm = document.getElementById("userRegister");
+	var registerForm = document.createElement("form");
+	var username = document.createElement("input");
+	var email = document.createElement("input");
+	var password = document.createElement("input");
+	var button = document.createElement("button");
+	button.type = "submit";
+	button.innerText = "Register"
+	div.appendChild(registerForm);
+	registerForm.appendChild(username);
+	//make them a type
+	registerForm.appendChild(email);
+	registerForm.appendChild(password);
+	registerForm.appendChild(button);
 	registerForm.onsubmit = function (event) {
 		event.preventDefault();
 		sendCommand([
 			"register-user",
-			registerForm.username.value,
-			registerForm.email.value,
-			registerForm.password.value
+			username.value,
+			email.value,
+			password.value
 			],
 			function(response) {console.log(response);}, false);
 	};
