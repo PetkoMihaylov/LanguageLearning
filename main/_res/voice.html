@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Speech Synthesis</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="style2.css">
+  <!--<link rel="stylesheet" href="style2.css">-->
 </head>
 <body>
 
@@ -39,7 +38,7 @@
   function populateVoices() {
     voices = this.getVoices();
     voicesDropdown.innerHTML = voices
-      .filter(voice => voice.lang.includes('fr'))
+      .filter(voice => voice.lang.includes('en'))
       .map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
       .join('');
   }

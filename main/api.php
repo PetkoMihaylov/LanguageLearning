@@ -74,6 +74,7 @@ function dbInit()
 						level INTEGER NOT NULL,
 						sublevel INTEGER NOT NULL)
 						");
+						//language and check if it is needed for wrong_answers
 	if (!$phrases)
 	{
 		print("Phrases:\n");
@@ -91,6 +92,18 @@ function dbInit()
 		print("\n");
 	}
 	
+	$wrong_answers = $db->query("Create table wrong_answers(
+	                       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+						   answer VARCHAR(256) NOT NULL,
+						   phraseId INT NOT NULL)");
+						   
+	if (!$wrong_answers)
+	{
+		print("Answers:\n");
+		print($db->error);
+		print("\n");
+	}
+	
  	$comments = $db->query("Create table comments(
 						   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						   userID INT NOT NULL,
@@ -98,7 +111,8 @@ function dbInit()
 						   phraseID INT NOT NULL,
 						   FOREIGN KEY (phraseID) REFERENCES phrases(id),
 						   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-						   photo VARCHAR(256))
+						   photo VARCHAR(256)
+						   )
 						   ");
 						   //phraseID how it can connect to the name of the phrase
 	// snimka, priqteli, diskusiq, kato forum,
@@ -108,6 +122,28 @@ function dbInit()
 		print($db->error);
 		print("\n");
 	}
+	
+	print ($db->error);
+	
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel) VALUES('Blue', '1', '1')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId) VALUES('Синьо', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId) VALUES('Син', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Червено', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Зелено', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Бяло', '$phrase_id')");
+	
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel) VALUES('Building', '1', '1')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId) VALUES('Сграда', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Кола', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Влак', '$phrase_id')");
+	$insert = $db-> query("INSERT INTO wrong_answers(answer, phraseId) VALUES('Картина', '$phrase_id')");
+	$db->close();
+	/*$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel) VALUES('Rabbit', '1', '1')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel) VALUES('Blue', '1', '1')");*/
+	
+	
 }
 
 function registerUser($username, $email, $password)
@@ -121,9 +157,37 @@ function registerUser($username, $email, $password)
 	print ($db->error);
 }
 
-function getWordCheckbox($words, $incorrect_words)
+function getWordCheckbox($limit)
 {
-	$correct_answers_all = $words["I was out today."];
+	$db = dbConnect();
+	$result = $db->query("SELECT * FROM phrases ORDER BY RAND() LIMIT $limit");
+	$phrases = $result->fetch_all(MYSQLI_ASSOC);	
+	//print_r($phrases);
+	$answers_count = rand(1, 2);
+	$wrong_answers_count = 4-$answers_count;
+
+	for($i = 0; $i < count($phrases); $i++)
+	{
+		$phrase = $phrases[$i];
+		$phraseId = $phrase['id'];
+		$result = $db->query("SELECT * FROM answers WHERE phraseId=$phraseId ORDER BY RAND() LIMIT $answers_count");
+		$phrases[$i]['answers'] = $result->fetch_all(MYSQLI_ASSOC);
+	}
+	
+	for($i = 0; $i < count($phrases); $i++)
+	{
+		$phrase = $phrases[$i];
+		$phraseId = $phrase['id'];
+		$result = $db->query("SELECT * FROM wrong_answers WHERE phraseId=$phraseId ORDER BY RAND() LIMIT $wrong_answers_count");
+		$phrases[$i]['wrong_answers'] = $result->fetch_all(MYSQLI_ASSOC);
+	}
+	
+	
+	//print_r($phrases);
+	return $phrases;
+	
+	
+	/*$correct_answers_all = $words["I was out today."];
 	$incorrect_answers_all = $incorrect_words["I was out today."];
 	$correct_answers = [];
 	$incorrect_answers = [];
@@ -145,18 +209,25 @@ function getWordCheckbox($words, $incorrect_words)
 	$result = ["correct_answers"=>$correct_answers,
 			   "incorrect_answers"=>$incorrect_answers];
 	return $result;
+	*/
 }
 
-function addPhrase($phrase, $answers)
+function addPhrase($phrase, $level, $sublevel, $answers)
 {
 	print($phrase);
 	print_r($answers);
 	$db = dbConnect();
+	print($level);
+	print("\n");
+	print($sublevel);
+	print("\n");
 	//check  if phrase already exists;
 	//update
 	
 	$phrase = $db->real_escape_string ($phrase);
-	$add_phrase = $db->query("INSERT INTO phrases(phrase) VALUES('$phrase')");
+	$level = $db->real_escape_string ($level);
+	$sublevel = $db->real_escape_string ($sublevel);
+	$add_phrase = $db->query("INSERT INTO phrases(phrase, level, sublevel) VALUES('$phrase', '$level', '$sublevel')");
 	$phrase_id = $db->insert_id;
 	print($db->error);
 	for($i = 0; $i < count($answers); $i++)
@@ -273,8 +344,8 @@ if($command[0] == "increment-score")
 }
 else if($command[0] == "get-word")
 {
-	$result = getWord($words);
-	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+	$res = getWord($words);
+	print (json_encode($res, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "check-word")
 {
@@ -298,6 +369,7 @@ else if($command[0] == "check-word")
 }
 else if($command[0] == "init-db")
 {
+	//print("2");
 	dbInit();
 }
 else if($command[0] == "register-user")
@@ -306,7 +378,8 @@ else if($command[0] == "register-user")
 }
 else if($command[0] == "get-words-checkbox")
 {
-	$result = getWordCheckbox($words, $incorrect_words);
+	$limit = 2;
+	$result = getWordCheckbox($limit);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "add-phrase")

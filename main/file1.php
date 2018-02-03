@@ -12,16 +12,18 @@ $words = array(
    "building"=>["Сграда"],
    "horse"=>["Кон", "Конче"],
    "rabbit"=>["Заек", "Зайче"],
-   "I was out today."=>["Бях навън днес.", "Днес бях навън.", "Навън бях днес."]
-);
+   "I was out today."=>["Бях навън днес.", "Днес бях навън.", "Навън бях днес."],
+   "They are among us."=>["Те са сред нас.", "Те са измежду нас.", "Измежду нас са.", "Сред нас са."],
+   "They are with me."=>["Тe сa с мен.", "С мен сa"]
+   );
 
 if(isset($_POST["input"]))
 {
 	$input = $_POST["input"];
 	$score = $_POST["score"];
 	$phrase = $_POST["correct_word"];
-	print("$input | ");
-	print("$phrase | ");
+	print("$input -1| ");
+	print("$phrase -2| ");
 	/*reset($words);
 	while(list($key, $value) = each($words))
 	{
@@ -47,7 +49,7 @@ if(isset($_POST["input"]))
 	
 	
 	
-	print("$input | ");
+	print("$input -3| ");
 	
 	stripslashes($input);
 	//$input = preg_replace(")", "", $input);
@@ -66,130 +68,507 @@ if(isset($_POST["input"]))
 		str_replace(array(".", "", $input);
 	} */
 	$answers = $words[$phrase];
+	print_r($answers);
 	
-	for($i = 0; $i < count($answers); $i++)
+	for($k = 0; $k < count($answers); $k++)
 	{
+		$correct = 1;
 		$typo = 0;
-		$answer = $answers[$i];
+		$curr_correct = [];
+		$answer = $answers[$k];
 		$answer = preg_replace("/[^[:alnum:][:space:]]/u", '', $answer);
 		$answer = mb_strtolower($answer,  mb_detect_encoding($answer));
-		$sim = similar_text($answer, $input, $percent);
 		
-		//check if percent is big enough, then check
-		
-		/*$pizza  = "piece1 piece2 piece3 piece4 piece5 piece6";
-		$pieces = explode(" ", $pizza);*/
-		/* if($word_count == 1)
-		{
-			if($sim < 4)
-			{
-				//mistake
-			}
-			else 
-			{
-				//typo
-			}
-		}
-		else if($word_count == 2)
-		{
-			//print($input . " | " . $answer );
-			//$printer = "you shall pass";
-			//$inputWords = explode(" ", $input);
-			//$answerWords = explode(" ", $answer);
-			/* for($i = 0; i < count(answerWords); i++)
-			{
-				print($answerWords[i]);
-			} */
-			//check the strlen of both input and answers every time
-			//check word by word to see if there is a typo in some word
-			//thsen
-		//}
-
-		print("<br><br>$answer | $input <br><br>");
-		$sim = similar_text($answer, $input, $percent);
-		//check if percent is big enough, then check
-		//print("<br>$word_count[0]<br>");
-		/* $word_count_input = str_word_count($input, 0);
-		$word_count = mb_str_word_count($answer, 1);
-		print("<br> $word_count[0]<br>");*/
+		print("<br><br>$answer -4| $input -5<br><br>");
 		$answerWords = explode(" ", $answer);
 		$inputWords = explode(" ", $input);
-		//print($answerWords[0]);
-		if(count($answerWords) == 1)
+		$answer_length = strlen($answer);
+		$answer_length = $answer_length/2;
+		$phrase_length = strlen($input);
+		$phrase_length = $phrase_length/2;
+		if($phrase_length == 0)
 		{
-			if($sim < 4)
-			{
-				//mistake
-			}
-			else 
-			{
-				//typo
-			}	
+			$correct = 0;
+			break;
 		}
-		else if(count($answerWords) > 1)
+		/* if(count($answerWords) == 1)
 		{
 			
-			
-			for($i = 0; $i < count($answerWords); $i++)
+			$sim = similar_text($answer, $input, $percent);
+			$sim = $sim/2;
+			$sim = floor($sim);
+			if($answer_length == $phrase_length)
 			{
-				print("<br>$answerWords[$i] => $inputWords[$i]<br>");
-				$sim = similar_text($answerWords[$i], $inputWords[$i], $percent);
-				if($answerWords[$i] == $inputWords[$i])
+				if($percent > 75)
 				{
-					//correct word
-					print("all is good=>$percent");
+					$correct = 0;
+				}
+				if($sim < 4)
+				{
+					if($phrase_length == 3)
+					{
+						if($sim == 2)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+							//typo
+							$typo++;
+						}
+					}
+					else if($phrase_length == 2)
+					{
+						if($sim == 2)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+							//typo
+							$typo++;
+						}
+					}
+					else if($phrase_length == 4)
+					{
+							if($sim == 3)
+							{
+								print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+								//typo
+								$typo++;
+							}
+					}
+					else
+					{
+						//incorrect the whole exercise
+						print("$answer => $input => mistake => $sim");
+						$correct = 0;
+					}
+				}
+				else if($answer_length == 2)
+				{
+					if($phrase_length == 2)
+					{
+						if($sim == 1)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+							//typo
+							$typo++;
+						}
+						else
+						{
+							print("$answer => $input => mistake => $sim");
+							$correct = 0;
+						}
+					}
+					else if($phrase_length == 3)
+					{
+						if($sim == 2)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+							$typo++;
+						}
+						else
+						{
+							print("$answer => $input => mistake => $sim");
+							$correct = 0;
+						}
+					}
+				}
+					//mistake
+			}
+			else if($answer_length == $phrase_length - 1)
+			{
+				if($answer_length == $sim - 1)
+				{
+					print("$answer => $input => typo => $sim");
+					$typo++;
 				}
 				else
 				{
-					print("typo");
-					$typo++;
-					//not correct the current word
-					//print it in the create div UNDERLINED____
+					print("$answer => $input => mistake => $sim");
+					$correct = 0;
 				}
 			}
-			//check the strlen of both input and answers every time
-			//check word by word to see if there is a typo in some word
-			//then
-		}
+			else if($answer_length == $phrase_length + 1)
+			{
+				if($answer_length == $sim)
+				{
+					print("$answer => $input => typo => $sim");
+					$typo++;
+				}
+				else
+				{
+					print("$answer => $input => mistake => $sim");
+					$correct = 0;
+				}
+			}
+			else if($answer_length == $phrase_length + 2)
+			{
+				if($answer_length == $sim)
+				{
+					print("$answer => $input => typo => $sim");
+					$typo++;
+				}
+				else
+				{
+					print("$answer => $input => mistake => $sim");
+					$correct = 0;
+				}
+			}
+			else
+			{
+				print("$answer => $input => final => $sim");
+				$correct = 0;
+			}
+		} */
 		
-		print("<br><br><br>$percent<br><br><br>");
-	
-	/*if(value != $input)
-	{
-		$value = array_shift($answer);
-		//continue;
-	}*/
-	
-		if($input == $answer)
+			
+		else if(count($answerWords) > 0)
 		{
-			//print("correct\n");
-			print("correct");
-			$score ++;
-			//print(")
+			if(count($answerWords) == count($inputWords))
+			{
+				for($j = 0; $j < count($answerWords), $j < count($inputWords); $j++)
+				{
+					
+					$answer_length = strlen($answerWords[$j]);
+					$answer_length = $answer_length/2;
+					$phrase_length = strlen($inputWords[$j]);
+					$phrase_length = $phrase_length/2;
+					print("<br>$answerWords[$j] -6=> $inputWords[$j] -7<br>");
+					$sim = similar_text($answerWords[$j], $inputWords[$j], $percent);
+					$sim = $sim/2;
+					$sim = floor($sim);
+					if($percent < 75)
+					{
+						$correct = 0;
+					}
+					else if($answerWords[$j] == $inputWords[$j])
+					{
+						//correct word
+						print("all is good=>$percent");
+					}
+					else
+					{
+						if($answer_length == $phrase_length)
+						{
+							if($sim < 4)
+							{
+								
+								if($answer_length == 4)
+								{
+										if($sim == 3)
+										{
+											print("$answerWords[$j] => $inputWords[$j] => typo-1 => $sim");
+											//typo
+											$typo++;
+										}
+								}
+								else if($answer_length == 3)
+								{
+									if($sim == 2)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo-2 => $sim");
+										//typo
+										$typo++;
+									}
+								}
+								else if($answer_length == 2)
+								{
+									/*if($sim == 2)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+										//typo
+										$typo++;
+										//correct = 1 still
+									}*/
+									/* if($sim == 2)
+									{
+										//correct
+									} */
+									if($sim == 1)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo-3 => $sim");
+										//typo
+										$typo++;
+									}
+									else
+									{
+										print("$answerWords[$j] => $inputWords[$j] => mistake-1 => $sim");
+										$correct = 0;
+									}
+								}
+								else if($answer_length == 1)
+								{
+									if($sim != 1)
+									{
+										$correct = 0;
+									}
+								}
+								else
+								{
+									//incorrect the whole exercise
+									print("$answerWords[$j] => $inputWords[$j] => mistake-2 => $sim");
+									$correct = 0;
+								}
+							}
+							else if($answer_length - 1 == $sim)
+							{
+								print("$answerWords[$j] => $inputWords[$j] => typo-4 => $sim");
+								$typo++;
+							}
+							else
+							{
+								print("$answerWords[$j] => $inputWords[$j] => finalfirstcycle => $answer_length => $phrase_length => $sim");
+								$correct == 0;
+							}
+								//always answer_length = phrase_length
+						}
+						else if($answer_length == 2)
+						{
+							if($phrase_length == 3)
+							{
+								if($sim == 2)
+								{
+									print("$answerWords[$j] => $inputWords[$j] => typo-5 => $sim");
+									$typo++;
+								}
+								else
+								{
+									print("$answerWords[$j] => $inputWords[$j] => mistake-3 => $sim");
+									$correct = 0;
+								}
+							}
+							else if($phrase_length == 1)
+							{
+								if($sim == 1)
+								{
+									$correct = 0; // 'y' is not 'ya' désolé
+								}
+							}
+						}
+						/*else if($answer_length == 3)
+						{
+							
+						}*/
+						else if($answer_length - 1 == $phrase_length)
+						{
+							if($answer_length == $sim - 1)
+							{
+								print("$answerWords[$j] => $inputWords[$j] => typo-6 => $sim");
+								$typo++;
+							}
+							else
+							{
+								print("$answerWords[$j] => $inputWords[$j] => mistake-4 => $sim");
+								$correct = 0;
+							}
+						}
+						else if($answer_length + 1 == $phrase_length)
+						{
+							if($answer_length == $sim)
+							{
+								print("$answerWords[$j] => $inputWords[$j] => typo-7 => $sim");
+								$typo++;
+							}
+							else
+							{
+								print("$answerWords[$j] => $inputWords[$j] => mistake-5 => $answer_length => $phrase_length => $sim");
+								$correct = 0;
+							}
+						}
+						else
+						{
+							print("$answer_length =< $phrase_length =< $typo");
+							print("$answerWords[$j] => $inputWords[$j] => final => $answer_length => $phrase_length => $sim");
+							$correct = 0;
+						}
+						/* else if($answer_length + 2 == $phrase_length)
+						{
+							if($answer_length == $sim)
+							{
+								print("$answer => $input => typo => $sim");
+								$typo++;
+							}
+							else
+							{
+								print("$answer => $input => mistake => $sim");
+								$correct = 0;
+							}
+						} */
+						/* $phrase_length = strlen($answerWords[$j]);
+						$answer_length = strlen($answerWords[$j]);
+						if($answer_length > 3)
+						{
+							if($sim + 1 == $answer_length)
+							{
+								//typo
+								print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+								$typo++;
+							}
+						}
+						else if($sim < 4)
+						{
+							if($answer_length == 3)
+							{
+								if($phrase_length == 3)
+								{
+									if($sim == 2)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+										//typo
+										$typo++;
+									}
+								}
+								else if($phrase_length == 2)
+								{
+									if($sim == 2)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+										//typo
+										$typo++;
+									}
+								}
+								else if($phrase_length == 4)
+								{
+										if($sim == 3)
+										{
+											print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+											//typo
+											$typo++;
+										}
+								}
+								else
+								{
+									//incorrect the whole exercise
+									//$incorrect
+									$correct = 0;
+								}
+							}
+							else if($answer_length == 2)
+							{
+								if($phrase_length == 2)
+								{
+									if($sim == 1)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+										//typo
+										$typo++;
+									}
+									else
+									{
+										//incorrect()
+										$correct = 0;
+									}
+								}
+								else if($phrase_length == 3)
+								{
+									if($sim == 2)
+									{
+										print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+										$typo++;
+									}
+									else
+									{
+										//incorrect
+										$correct = 0;
+									}
+								}
+							}
+						}
+						else if($answer_length > 3)
+						{
+							if($phrase_length == $answer_length)
+							{
+								if($answer_length == $sim)
+								{
+									
+								}
+								else if($answer_length == $sim - 1)
+								{
+									
+								}
+								else if($answer_length == $sim + 1)
+								{
+									
+								}
+							}
+						}
+					 */
+					 }
+					
+					
+				}
+			}
+			else if(count($answerWords) + 1 == count($inputWords))
+			{
+				for($j = 0; $j < count($answerWords); $j++)
+				{
+					print("$answerWords[$j] > ");
+				}
+				$correct = 0;
+				$whole_answer = str_replace(' ', '', $answer);
+				$whole_input = str_replace(' ', '', $input);
+				$whole_answer_length = strlen($whole_answer);
+				$whole_input_length = strlen($whole_input);
+				print("$whole_answer => $whole_input");
+				
+				if($whole_answer_length == $whole_input_length)
+				{
+					$sim = similar_text($whole_answer, $whole_input, $percent);
+					print("Whole answer and input => $sim => $percent");
+					if($whole_answer_length == $sim && $percent > 75)
+					{
+						for($v = 0; $v < count($answerWords); $v++)
+						{
+							
+						}
+					}
+					
+				}
+			}
+			else if(count($answerWords) - 1 == count($inputWords))
+			{
+				for($j = 0; $j < count($answerWords); $j++)
+				{
+					print("$answerWords[$j] > ");
+				}
+				$correct = 0;
+				$whole_answer = str_replace(' ', '', $answer);
+				$whole_input = str_replace(' ', '', $input);
+				$whole_answer_length = strlen($whole_answer);
+				$whole_input_length = strlen($whole_input);
+				print("$whole_answer => $whole_input");
+			}
+			else
+			{
+				$correct = 0;
+			}
 		}
-			//print($a[$i]);
+		//$curr_correct[$j] = $correct;
+		if($correct == 1)
+		{
+			break;
+		}
 	}
-	//print_r($a[$i]);
-	$michael = "Michael";
-	$michaela = "Michael  ";
+	
+	$michael = "не";
+	$michaela = "ен";
 	$sim = similar_text($michael, $michaela, $percent);
-	print("<br>$percent || $sim<br>");
-	//echo $words[0]['$correct_word'];
-	/*for ($i = 0; $i < count($words); $i++) 
+	$sim = $sim/2;
+	$sim = floor($sim);
+	print("<br>$michael || $michaela || $percent || $sim<br>");
+	if($correct == 1)
 	{
-	}*/
-	
-	
+		print("correct | $typo | ");
+		$score++;
+	}
+	else
+	{
+		$score = 0;
+	}
 	
 }
-else
-{
-	$score = 0;
-}
-$word = array_rand ($words);
-print("$word | \n");
-$curr_word = $word;
-print("$score\n");
+	
+
+	$word = array_rand ($words);
+	print("$word | \n");
+	$curr_word = $word;
+	//print("$score\n");
 ?>
 </pre>
 <form action="file1.php" method="POST">

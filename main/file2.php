@@ -3,7 +3,7 @@
 <head>
 	<!--<script src="/_res/js.js"></script>-->
 	<link rel="stylesheet" href="/_res/style.css">
-	<script src="/audio.js"></script>
+	<script src="audio.js"></script>
 	<script src="/_res/js.js"></script>
 </head>
 <body>
@@ -26,14 +26,13 @@
 <pre>
 <?php
 
-/*if(isset($_POST["input"]))
+if(isset($_POST["input"]))
 {
 	$input = $_POST["input"];
 	$score = $_POST["score"];
 	$correct_word = $_POST["correct_word"];
 	print("$input | ");
 	print("$correct_word | ");
-	*/
 	/*reset($words);
 	while(list($key, $value) = each($words))
 	{
@@ -114,7 +113,7 @@ else
 ?>
 
 </pre>
-<form id="userInputTest" action="file1.php" method="POST">
+<form id="userInputTest" action="file2.php" method="POST">
 	<input type="text" name="input" title="конче"/>
 	<input type="hidden" name="correct_word" value="<?php print($word); ?>"/>
 	<input type="hidden" name="score" value="<?php print($score); ?>"/>
