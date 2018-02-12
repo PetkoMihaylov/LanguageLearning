@@ -1,9 +1,7 @@
 
-function playAudio(state)
-{
 	
 function playAudio()
-{
+{alert(1);
 	const msg = new SpeechSynthesisUtterance();
   let voices = [];
   const voicesDropdown = document.querySelector('[name="voice"]');
@@ -14,7 +12,7 @@ function playAudio()
   function populateVoices() {
     voices = this.getVoices();
     voicesDropdown.innerHTML = voices
-      .filter(voice => voice.lang.includes('en'))
+      .filter(voice => voice.lang.includes(''))
       .map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
       .join('');
   }
@@ -40,5 +38,3 @@ function playAudio()
   stopButton.addEventListener('click', () => toggle(false));
 }
 window.onload = playAudio;
-}
-//window.onload = playAudio;

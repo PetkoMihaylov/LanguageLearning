@@ -29,12 +29,27 @@ function incrementScore()
 	sendCommand(["increment-score"]);
 }
 
-function getWord(state)
+function makePhraseExercise(phrase, div)
+{
+	
+}
+
+function getPhrase(div, state)
 {
 	var phrase;
-	sendCommand(["get-word"], function(r) {
-		console.log(state);
-	}, false);
+	sendCommand(["get-phrase"], function(r) {
+		/* var phrase = r;
+		state.phrase = phrase;
+		phrase = state.phrase.pop();
+		console.log(state.phrase);
+		makePhraseExercise(phrase, div); */
+		state.phrases = r;
+		console.log(r);
+		//console.log(state.phrases);
+		var phrase = state.phrases;
+		makePhraseExercise(phrase, div);
+				
+	});
 	//console.log(state.phrase);
 }
 
@@ -65,15 +80,138 @@ function callback(state, response)
 	button.textContent="Continue";
 	button.onclick = function()
 	{
-		getWord(state);
+		getPhrase(state);
 	}
 	
 }
-
-
+function getImages(div, state)
+{
+	//var container = document.createElement("div");
+	var container = div;
+	//document.body.appendChild(container);
+	console.log(state.exercises.images[0].word);
+	console.log(state.exercises.images[0].incorrect_word0);
+	console.log(state.exercises.images[0].incorrect_word1);
+	var unlock = 0;
+	var words = [];
+	var incorrectWords = [];
+	var emptyJoin = [];
+	var allWords = [];
+	var afterWord = [];
+	var imageCount = state.imageCount;
+	var counter = state.counter;
+	//for(var i = 0; i < state.exercises.images.length; i++)
+	//{
+	var i = imageCount - counter;
+		console.log(i);
+		var word = state.exercises.images[i].word;
+		words.push(word);
+		var incorrectWordOne = state.exercises.images[i].incorrect_word0;
+		var incorrectWordTwo = state.exercises.images[i].incorrect_word1;
+		incorrectWords.push(incorrectWordOne, incorrectWordTwo);
+		allWords = emptyJoin.concat(words, incorrectWords);
+		i++;
+	//}
+	//console.log(words);
+	//console.log(incorrectWords);
+	//console.log(allWords);
+	//console.log(imageExercises);
+	//var words = ["tree", "rabbit", "building", "horse", "blue", "doll"];
+	var inps = [];
+	var imgs = [];
+	var correctWord = 0;
+	console.log(allWords[0]);
+	for(var i = 0; i < 3; i++)
+	{
+		var div = document.createElement("div");
+		container.appendChild(div);
+		div.class = "inline-block";
+		var label = document.createElement("label");
+		
+		
+		var img = document.createElement("img");
+		imgs.push(img);
+		console.log(imgs);
+		var inp = document.createElement("input");
+		inps.push(inp);
+		inp.type = "radio";
+		inp.name = "choice";
+		inp.style = "display:block; cursor:pointer;  margin-top: -15px; margin-bottom: 10px; margin-right: -100px; margin-left: 100px;"
+		inp.value = allWords[i];
+		console.log (i + allWords[i]);
+		img._name = words[i];
+		img.src = `/_res/${allWords[i]}.jpg`;
+		img.height = 120;
+		img.width = 120;
+		img.style = "display: inline-block; float: left";
+		div.appendChild(img);
+		div.appendChild(label);
+		var span = document.createElement("span");
+		div.appendChild(span);
+		span.innerText = `${allWords[i]}`;
+		//label.text = `${allWords[i]}`;
+		span.style = "display:block;";
+		label.appendChild(img);
+		label.appendChild(inp);
+		
+		div.appendChild(inp);
+		img.addEventListener (
+			'click',
+			function(e)
+			{
+				//img.onclick = undefined;
+				//checked = true;
+				/*var p = document.createElement("p");
+				p.className = "photo-caption";
+				p.textContent = e.target._name;
+				//console.log(e.target.parentElement);
+				e.target.parentElement.appendChild(p); */
+				//console.log(e.target.src);
+			}
+		);
+	}
+	var button = document.createElement("button");
+	document.body.appendChild(button);
+	button.textContent = "Check";
+	button.onclick = function() 
+	{
+		button.parentNode.removeChild(button);
+		if(inps[correctWord].checked)
+		{
+			//incrementScore();
+			unlock = 1;
+			console.log("correct");
+		}
+		else
+		{
+			console.log("not correct");
+		}
+	}
+	var buttonC = document.createElement("button");
+	div.appendChild(buttonC);
+	buttonC.textContent="Continue";
+	state.counter--;
+	buttonC.onclick = function()
+	{
+		if(state.counter + state.exercises.images.length == state.exercises.images.length)
+		{
+			console.log("continuing");
+			clearDiv(div);
+			startExercises(div, state);
+		}
+		else
+		{
+			clearDiv(container);
+			getImages(container, state);
+		}
+	}
+	
+	
+}
 
 function makeCheckboxes(phrase, div)
 {
+	console.log(phrase);
 	var correct_answers = phrase.answers;
 	var incorrect_answers = phrase.wrong_answers;
 	var phraseName = phrase.phrase;
@@ -243,11 +381,15 @@ function checkboxesFour(div, state)
 {
 	if(state.phrases.length == 0)
 	{
+		console.log(state.phrases.length);
 		sendCommand(
 			["get-words-checkbox"],
 			function (r){
 				state.phrases = r;
+				console.log(r);
+				console.log(state.phrases);
 				var phrase = state.phrases.pop();
+				console.log(phrase);
 				makeCheckboxes(phrase, div);
 			}
 		);
@@ -261,28 +403,28 @@ function checkboxesFour(div, state)
 
 function registrationForm(div)
 {
-	sendCommand(["init-db"], function(r) {console.log (r);}, false);
-	var state = {};
-	state.phrase = undefined;
+	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
+	//var state = {};
+	//state.phrase = undefined;
 	
 	//playAudio(state);
 	
-	getWord(state);
+	//getPhrase(state);
 	
 	var form = document.createElement("form");
 	div.appendChild(form);
 	var input = document.createElement("input");
-	form.onsubmit = function(event){
+	/* form.onsubmit = function(event){
 		event.preventDefault(); //always first
 		console.log(2);
 		sendCommand(
-			["check-word", state.phrase, input.value],
+			["check-phrase", state.phrase, input.value],
 			function (response)
 			{
 				callback (state, response);
 			}
 		);
-	};
+	}; */
 	
 	var registerForm = document.createElement("form");
 	var username = document.createElement("input");
@@ -291,12 +433,15 @@ function registrationForm(div)
 	var button = document.createElement("button");
 	button.type = "submit";
 	button.innerText = "Register"
+	password.type = "password";
 	div.appendChild(registerForm);
 	registerForm.appendChild(username);
 	//make them a type
 	registerForm.appendChild(email);
 	registerForm.appendChild(password);
 	registerForm.appendChild(button);
+	username.required = true;
+	password.required = true;
 	registerForm.onsubmit = function (event) {
 		event.preventDefault();
 		sendCommand([
@@ -309,31 +454,34 @@ function registrationForm(div)
 	};
 }
 
-function main()
-{	
-	console.log(2);
-	sendCommand(["init-db"], function(r) {console.log (r);}, false);
-	//initiating the database makes it run 1-3s slower.
-	var state={
-		phrases: [], 
-	};
-
-	var div = document.createElement("div");
-	document.body.appendChild(div);
-	var button = document.createElement("button");
-	document.body.appendChild(button);
-	button.innerText = "Next";
+function startExercises(div, state)
+{
+	console.log(state.counter);
+	if(state.counter == 0)
+	{
+		
+	}
+	else
+	{
+		getImages(div, state);
+	}
+	
+	//add table in api.php
+	//console.log(state.exercises.radio);
 	
 	var exercises = [
 	//	registrationForm,
 	//	registrationForm,
-		getWord,
-		getWord,
+		getPhrase,
+		getPhrase,
 	//	addPhrasesMode,
 	//	addPhrasesMode,
+		getImages,
+	//	getImages,
 		checkboxesFour,
 		checkboxesFour,
 	];
+
 	shuffle(exercises);
 	
 	button.onclick = function(){
@@ -356,7 +504,178 @@ function main()
 	}
 	
 	exercises.pop()(div, state);
+
 }
 
+function showLevel(div, state, level)
+{
+	for(var i = 0; i < 5; i++)
+	{
+		var a = document.createElement("a");
+		a.href = "#";
+		a.sublevel = i+1;
+		a.innerText = `SubLevel ${a.sublevel}`;
+		div.appendChild(a);
+		a.onclick = function (event){
+			event.preventDefault();
+			clearDiv(div);
+			sendCommand(
+				["get-level", `${level}`, `${this.sublevel}`],
+				function (r){
+					console.log(r);
+					state.exercises = r;
+					clearDiv(div);
+					state.imageCount = state.exercises.images.length;
+					state.counter = state.exercises.images.length;
+					startExercises(div, state);
+				}
+			);
+		};
+	}
+}
+
+function showMainPage(div, state)
+{
+	for(var i = 0; i < 5; i++)
+	{
+		var a = document.createElement("a");
+		a.href = "#";
+		a.level = i+1;
+		a.innerText = `Level ${a.level}`;
+		var img = document.createElement("img");
+		img.src = `/_res/level_${a.level}.jpg`;
+		img.height = 60;
+		img.width = 60;
+		img.style = "display: block;"
+		a.appendChild(img);
+		div.appendChild(a);
+		a.onclick = function (event){
+			event.preventDefault();
+			clearDiv(div);
+			showLevel(div, state, this.level);
+		};
+	}
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function clearDiv(div)
+{
+	div.innerHTML = "";
+}
+function showLogin(div, state)
+{
+	console.log(1);
+	var form = document.createElement("form");
+	var username = document.createElement("input");
+	username.type = "text";
+	var password = document.createElement("input");
+	password.type = "password";
+	var button = document.createElement("button");
+	button.innerText = "Login";
+	button.type = "submit";
+	div.appendChild(form);
+	form.appendChild(username);
+	form.appendChild(password);
+	form.appendChild(button);
+	var errorMessage = document.createElement("p");
+	form.onsubmit = function(event){
+		event.preventDefault();
+		sendCommand([
+			"login",
+			username.value,
+			password.value
+			],
+			function(r){
+				if(r)
+				{
+					setCookie("username", username.value, 365);
+					setCookie("password", password.value, 365);
+					clearDiv(div);
+					showMainPage(div, state);
+				}
+				else
+				{
+					errorMessage.classname = "error";
+					errorMessage.innerText = "Invalid username or password";
+					div.appendChild(errorMessage);
+				}
+			}
+		);
+	}
+	
+	var p = document.createElement("p");
+	div.appendChild(p);
+	var a = document.createElement("a");
+	a.innerText = "Register";
+	a.href = "#";
+	p.appendChild(a);
+	a.onclick = function(event) {
+		event.preventDefault();
+		div.innerHTML="";
+		registrationForm(div, state);
+	}
+	
+	
+}
+
+function main()
+{	
+	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
+
+	var state={};
+	
+	var div = document.querySelector('body>main');
+	
+	var username = getCookie("username");
+	var password = getCookie("password");
+	if(username && password)
+	{
+		sendCommand([
+			"login",
+			username,
+			password
+			],
+			function(r){
+				if(r)
+				{
+					showMainPage(div, state);
+				}
+				else
+				{
+					console.log(r);
+					showLogin(div, state);
+				}
+			}
+		);
+	}
+	else
+	{
+		showLogin(div, state);
+	}
+	
+	return;
+}
 
 window.onload = main;
