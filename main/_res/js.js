@@ -1,5 +1,44 @@
 ﻿"use strict";
 
+function playAudio(phrase)
+{
+	const msg = new SpeechSynthesisUtterance();
+	let voices = [];
+	const voicesDropdown = document.querySelector('[name="voice"]');
+	const options = document.querySelectorAll('[type="range"], [name="text"]');
+	const speakButton = document.querySelector('#speak');
+	const stopButton = document.querySelector('#stop');
+	msg.text = phrase;
+	function populateVoices() {
+		voices = this.getVoices();
+		voicesDropdown.innerHTML = voices
+			.filter(voice => voice.lang.includes('en'))
+			.map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
+			.join('');
+	}
+	function setVoice() {
+		msg.voice = voices.find(voice => voice.name === this.value);
+		toggle();
+	}
+	function toggle(startOver = true) {
+		speechSynthesis.cancel();
+		if (startOver) 
+		{
+		  speechSynthesis.speak(msg);
+		}
+	}
+	function setOption() {
+		console.log(this.name, this.value);
+		msg[this.name] = this.value;
+		toggle();
+	}
+	speechSynthesis.addEventListener('voiceschanged', populateVoices);
+	voicesDropdown.addEventListener('change', setVoice);
+	options.forEach(option => option.addEventListener('change', setOption));
+	speakButton.addEventListener('click', toggle);
+	stopButton.addEventListener('click', () => toggle(false));
+}
+
 function sendCommand(command, callback, json=true)
 {
 	console.log(command);
@@ -29,20 +68,214 @@ function incrementScore()
 	sendCommand(["increment-score"]);
 }
 
-function makePhraseExercise(phrase, div)
+function makeRadioExercise(div, state)
 {
-	
+	var p = document.createElement("p");
+	var span = document.createElement("span");
 }
+
+function makeListeningExercise(div, state)
+{
+	var p = document.createElement("p");
+	div.appendChild(p);
+	
+	console.log(state.exercises.phrases[state.listeningCounter].phrase);
+	var phrase = state.exercises.phrases[state.listeningCounter].phrase;
+	//var phraseName = document.createElement("div");
+	var t = document.createTextNode("Напишете каквото чуете.");
+	p.appendChild(t);
+	//do the cycle for each word to show translation db->words<>
+	//var interval = "";
+		var select = document.createElement("select");
+		div.appendChild(select);
+		select.name = "voice";
+		select.id = "voices";
+		var option = document.createElement("option");
+		select.appendChild(option);
+		option.innerText = "Select";
+		option.value = "";
+		var input = document.createElement("input");
+		div.appendChild(input);
+		input.name = "rate";
+		input.type = "range";
+		input.min = "0";
+		input.max = "2";
+		input.value = "1"
+		input.step = "0.1";
+		var inputTwo = document.createElement("input");
+		div.appendChild(inputTwo);
+		inputTwo.name = "pitch";
+		inputTwo.type = "range";
+		inputTwo.min = "0";
+		inputTwo.max = "2";
+		inputTwo.step = "0.1";
+		var stopButton = document.createElement("button");
+		div.appendChild(stopButton);
+		stopButton.id = "stop";
+		var speakButton = document.createElement("button");
+		div.appendChild(speakButton);
+		speakButton.id = "speak";
+		speakButton.innerText = "Пусни изречението";
+		speakButton.onclick = playAudio(phrase);
+	
+	
+	var phraseWords = phrase.split(" ");
+	for(var wordCount = 0; wordCount < phraseWords.length; wordCount++)
+	{
+		var showPhrase = document.createElement("span");
+		var space = document.createElement("span");
+		space.innerText = ' ';
+		showPhrase.innerText = `${phraseWords[wordCount]}`;
+		div.appendChild(showPhrase);
+		if(wordCount + 1 != phraseWords.length)
+		{
+			div.appendChild(space);
+		}
+		//showPhrase.innerText
+		//p.appendChild(showPhrase)
+	}
+	
+	
+	//var phraseAnswers = state.exercises.phrases[state.phraseCounter].answers;
+	var phraseAnswers = [];
+	//console.log(phraseAnswers);
+	phraseAnswers.push(phrase);
+	console.log(phraseAnswers);
+	var phraseInput = document.createElement("input");
+	div.appendChild(phraseInput);
+	//var listenButton = document.createElement("button");
+	//div.appendChild(listenButton);
+	//listenButton.innerText="Пусни записа";
+	//listenButton.onclick = playAudio(phrase);
+	
+	var form = document.createElement("form");
+	var button = document.createElement("button");
+	button.innerText= "Провери";
+	button.type = "submit";
+	form.appendChild(button);
+	div.appendChild(form);
+	form.onsubmit = function (event) {
+		event.preventDefault();
+		sendCommand(["check-phrase", phraseInput.value, phraseAnswers, phrase], 
+					function (r){
+			
+					console.log(r);
+					if(r.correct)
+					{
+						
+					}
+					else
+					{
+						state.listeningWrong.push("");
+					}
+					
+					}, false);
+	}
+	state.listeningCounter++;
+}
+
+function makePhraseExercise(div, state)
+{
+	var p = document.createElement("p");
+	div.appendChild(p);
+	
+	console.log(state.exercises.phrases[state.phraseCounter].phrase);
+	var phrase = state.exercises.phrases[state.phraseCounter].phrase;
+	//var phraseName = document.createElement("div");
+	var t = document.createTextNode("Какъв е преводът на изречението?");
+	p.appendChild(t);
+	//do the cycle for each word to show translation db->words<>
+	//var interval = "";
+	
+	var phraseWords = phrase.split(" ");
+	for(var wordCount = 0; wordCount < phraseWords.length; wordCount++)
+	{
+		var showPhrase = document.createElement("span");
+		var space = document.createElement("span");
+		space.innerText = ' ';
+		showPhrase.innerText = `${phraseWords[wordCount]}`;
+		div.appendChild(showPhrase);
+		if(wordCount + 1 != phraseWords.length)
+		{
+			div.appendChild(space);
+		}
+		//showPhrase.innerText
+		//p.appendChild(showPhrase)
+	}
+	
+	
+	//var phraseAnswers = state.exercises.phrases[state.phraseCounter].answers;
+	var phraseAnswers = [];
+	//console.log(phraseAnswers);
+	for(var answerCount = 0; answerCount < state.exercises.phrases[state.phraseCounter].answers.length; answerCount++)
+	{
+		phraseAnswers.push(state.exercises.phrases[state.phraseCounter].answers[answerCount].answer);
+	}
+	console.log(phraseAnswers);
+	var phraseInput = document.createElement("input");
+	phraseInput.phrase = "";
+	div.appendChild(phraseInput);
+	
+	
+	var form = document.createElement("form");
+	var button = document.createElement("button");
+	button.innerText= "Провери";
+	button.type = "submit";
+	form.appendChild(button);
+	div.appendChild(form);
+	form.onsubmit = function (event) {
+		event.preventDefault();
+		sendCommand(
+			["check-phrase", phraseInput.value, phraseAnswers, phrase], 
+			function (r){
+				if(r.correct)
+				{
+					
+				}
+				else
+				{
+					state.phrasesWrong.push(state.phraseCounter);
+				}, false
+			}
+		);
+		console.log(state.exercises.phrases[state.phraseCounter].id);
+		getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
+	}
+	state.phraseCounter++;
+}
+
+
 
 function getPhrase(div, state)
 {
-	var phrase;
+	if(state.phrases.length == 0)
+	{
+		console.log(state.phrases.length);
+		sendCommand(
+			["get-words-checkbox"],
+			function (r){
+				state.phrases = r;
+				console.log(r);
+				console.log(state.phrases);
+				var phrase = state.phrases.pop();
+				console.log(phrase);
+				//clearDiv(div);
+				makeCheckboxes(phrase, div, state);
+			}
+		);
+	}
+	else
+	{
+		var phrase = state.phrases.pop();
+		makeCheckboxes(phrase, div, state);
+	}
+	/*var phrase;
 	sendCommand(["get-phrase"], function(r) {
-		/* var phrase = r;
+		var phrase = r;
 		state.phrase = phrase;
 		phrase = state.phrase.pop();
 		console.log(state.phrase);
-		makePhraseExercise(phrase, div); */
+		makePhraseExercise(phrase, div); 
 		state.phrases = r;
 		console.log(r);
 		//console.log(state.phrases);
@@ -50,6 +283,7 @@ function getPhrase(div, state)
 		makePhraseExercise(phrase, div);
 				
 	});
+	*/
 	//console.log(state.phrase);
 }
 
@@ -84,10 +318,12 @@ function callback(state, response)
 	}
 	
 }
-function getImages(div, state)
+function showImages(div, state)
 {
-	//var container = document.createElement("div");
 	var container = div;
+	var itemContainer = document.createElement("div");
+	container.appendChild(itemContainer);
+	itemContainer.id = "itemContainer";
 	//document.body.appendChild(container);
 	console.log(state.exercises.images[0].word);
 	console.log(state.exercises.images[0].incorrect_word0);
@@ -102,15 +338,30 @@ function getImages(div, state)
 	var counter = state.counter;
 	//for(var i = 0; i < state.exercises.images.length; i++)
 	//{
-	var i = imageCount - counter;
-		console.log(i);
-		var word = state.exercises.images[i].word;
-		words.push(word);
-		var incorrectWordOne = state.exercises.images[i].incorrect_word0;
-		var incorrectWordTwo = state.exercises.images[i].incorrect_word1;
-		incorrectWords.push(incorrectWordOne, incorrectWordTwo);
-		allWords = emptyJoin.concat(words, incorrectWords);
-		i++;
+	
+	var imageIndex;
+	console.log(state);
+	if(state.doWrongExercise)
+	{
+		console.log("here");
+		imageIndex = state.wrongExercises.shift().index;
+	}
+	else
+	{
+	    imageIndex = imageCount - counter;
+	}
+
+	console.log(imageIndex);
+	var word = state.exercises.images[imageIndex].word;
+	words.push(word);
+	var incorrectWordOne = state.exercises.images[imageIndex].incorrect_word0;
+	var incorrectWordTwo = state.exercises.images[imageIndex].incorrect_word1;
+	incorrectWords.push(incorrectWordOne, incorrectWordTwo);
+	allWords = emptyJoin.concat(words, incorrectWords);
+	
+	var p = document.createElement("p");
+	itemContainer.appendChild(p);
+	p.innerText = word;
 	//}
 	//console.log(words);
 	//console.log(incorrectWords);
@@ -119,42 +370,46 @@ function getImages(div, state)
 	//var words = ["tree", "rabbit", "building", "horse", "blue", "doll"];
 	var inps = [];
 	var imgs = [];
-	var correctWord = 0;
-	console.log(allWords[0]);
+	shuffle(allWords);
+	var correctWord = allWords.indexOf(word); 
+	console.log(allWords[correctWord]);
 	for(var i = 0; i < 3; i++)
 	{
+		var li = document.createElement("li");
 		var div = document.createElement("div");
-		container.appendChild(div);
-		div.class = "inline-block";
+		div.className = "images";
+		itemContainer.appendChild(li);
+		li.appendChild(div);
 		var label = document.createElement("label");
-		
+		div.appendChild(label);
 		
 		var img = document.createElement("img");
+		div.appendChild(img);
 		imgs.push(img);
 		console.log(imgs);
 		var inp = document.createElement("input");
+		div.appendChild(inp);
 		inps.push(inp);
 		inp.type = "radio";
 		inp.name = "choice";
-		inp.style = "display:block; cursor:pointer;  margin-top: -15px; margin-bottom: 10px; margin-right: -100px; margin-left: 100px;"
-		inp.value = allWords[i];
+		inp.style = "display: inline-block; cursor:pointer; float: center; position: absolute; margin: 139px 102px -130px -115px;";
+		inp.value = `${allWords[i]}`;
 		console.log (i + allWords[i]);
 		img._name = words[i];
 		img.src = `/_res/${allWords[i]}.jpg`;
 		img.height = 120;
 		img.width = 120;
-		img.style = "display: inline-block; float: left";
-		div.appendChild(img);
-		div.appendChild(label);
+		img.id = `img${i}`;
+		//img.style = "float: centre";
 		var span = document.createElement("span");
 		div.appendChild(span);
+		span.id = `spanimage${i}`;
 		span.innerText = `${allWords[i]}`;
 		//label.text = `${allWords[i]}`;
-		span.style = "display:block;";
+		//p.style = "display: inline-block;";
 		label.appendChild(img);
 		label.appendChild(inp);
 		
-		div.appendChild(inp);
 		img.addEventListener (
 			'click',
 			function(e)
@@ -171,7 +426,7 @@ function getImages(div, state)
 		);
 	}
 	var button = document.createElement("button");
-	document.body.appendChild(button);
+	itemContainer.appendChild(button);
 	button.textContent = "Check";
 	button.onclick = function() 
 	{
@@ -184,33 +439,47 @@ function getImages(div, state)
 		}
 		else
 		{
-			console.log("not correct");
+			state.wrongExercises.push({"index" : imageIndex, "exercise" : showImages});
+			console.log(state);
 		}
 	}
 	var buttonC = document.createElement("button");
-	div.appendChild(buttonC);
+	itemContainer.appendChild(buttonC);
 	buttonC.textContent="Continue";
-	state.counter--;
+	if(!state.doWrongExercise)
+	{
+		state.counter--;
+	}
+	//console.log(state.counter);
 	buttonC.onclick = function()
 	{
-		if(state.counter + state.exercises.images.length == state.exercises.images.length)
+		if(state.counter == 0 && !state.doWrongExercise)
 		{
 			console.log("continuing");
-			clearDiv(div);
-			startExercises(div, state);
+			clearDiv(container);
+			startExercises(container, state);
 		}
-		else
+		else if(!state.doWrongExercise)
 		{
 			clearDiv(container);
-			getImages(container, state);
+			showImages(container, state);
+		}
+		else if(state.wrongExercises.length > 0)
+		{
+			clearDiv(container);
+			startWrongExercises(container, state);
 		}
 	}
 	
 	
 }
 
-function makeCheckboxes(phrase, div)
+function makeCheckboxes(phraseIndex, div, state)
 {
+	//clearDiv(div);
+	//console.log(phrase.phrase);
+	
+	var phrase = state.exercises.checkbox_phrases[phraseIndex];
 	console.log(phrase);
 	var correct_answers = phrase.answers;
 	var incorrect_answers = phrase.wrong_answers;
@@ -223,7 +492,7 @@ function makeCheckboxes(phrase, div)
 	console.log(mixed_answers);
 	var p = document.createElement("p");
 	var t = document.createTextNode("What is the translation of ");
-	var questionMark = 
+	//var questionMark = 
 	//p.innerHTML = phraseName;
 	p.appendChild(t);
 	p.appendChild(textPhrase);
@@ -262,6 +531,7 @@ function makeCheckboxes(phrase, div)
 		checkboxes.push(checkbox);		
 	}
 	var button = document.createElement("button");
+	
 	//button.id = "";
 	button.disabled = true;
 	button.type = "submit";
@@ -269,6 +539,7 @@ function makeCheckboxes(phrase, div)
 	form.appendChild(button);
 	form.onsubmit = function (event) {
 		event.preventDefault();
+		var correct = true;
 		for(var i = 0; i < checkboxes.length; i++)
 		{
 			if(correct_answers.indexOf(mixed_answers[i])!=-1)
@@ -283,6 +554,7 @@ function makeCheckboxes(phrase, div)
 				{
 					//correct answer was not checked 
 					checkboxes[i].parentNode.style = "background: pink;";
+					correct = false;
 				}
 			}
 			else
@@ -291,18 +563,26 @@ function makeCheckboxes(phrase, div)
 				{
 					//incorrect answer was checked
 					checkboxes[i].parentNode.style = "background: red;";
+					correct = false;
 				}
 				else
 				{
 					//incorrect answer was not checked
-					checkboxes[i].parentNode.style = "background: darkgreen;"; 
+					checkboxes[i].parentNode.style = "background: darkgreen;";
 				}
 			}
 			
 			//console.log(checkboxes[i].checked);
 		}
+		console.log("jere");
+		if(!correct)
+		{	
+			state.wrongExercises.push({"index" : phraseIndex, "exercise" : checkboxesFour});
+			console.log(state);
+		}
 	}
 }
+
 
 function shuffle(array)
 {
@@ -379,26 +659,19 @@ function addPhrasesMode(div)
 
 function checkboxesFour(div, state)
 {
-	if(state.phrases.length == 0)
+	var phraseIndex;
+
+	if(state.doWrongExercise)
 	{
-		console.log(state.phrases.length);
-		sendCommand(
-			["get-words-checkbox"],
-			function (r){
-				state.phrases = r;
-				console.log(r);
-				console.log(state.phrases);
-				var phrase = state.phrases.pop();
-				console.log(phrase);
-				makeCheckboxes(phrase, div);
-			}
-		);
+		phraseIndex = state.wrongExercises.shift().index;
 	}
 	else
 	{
-		var phrase = state.phrases.pop();
-		makeCheckboxes(phrase, div);
+		phraseIndex = state.checkboxCounter;
+		state.checkboxCounter++;
 	}
+
+	makeCheckboxes(phraseIndex, div, state);
 }
 
 function registrationForm(div)
@@ -454,58 +727,105 @@ function registrationForm(div)
 	};
 }
 
+function getPhraseComments(phraseId, div, state)
+{
+	
+	sendCommand(
+		["get-phrase-comments", phraseId],
+		function (comments){
+			console.log(comments);
+			for(var i = 0; i < comments.length; i++)
+			{
+				var p = document.createElement("p");
+				div.appendChild(p);
+				p.innerText = comments[i].comment;
+			}
+			console.log(comments);
+		}
+	);
+	
+}
+
+function startWrongExercises(div, state)
+{
+	if(state.wrongExercises.length > 0)
+	{
+		state.doWrongExercise = true;
+		console.log("2");
+		state.wrongExercises[0].exercise(div, state);
+	}	
+	console.log("3");
+}
+
 function startExercises(div, state)
 {
 	console.log(state.counter);
-	if(state.counter == 0)
+	if(state.counter > 0)
 	{
+		showImages(div, state);
 		
 	}
 	else
 	{
-		getImages(div, state);
-	}
-	
-	//add table in api.php
-	//console.log(state.exercises.radio);
-	
-	var exercises = [
-	//	registrationForm,
-	//	registrationForm,
-		getPhrase,
-		getPhrase,
-	//	addPhrasesMode,
-	//	addPhrasesMode,
-		getImages,
-	//	getImages,
-		checkboxesFour,
-		checkboxesFour,
-	];
+		
+		//add table in api.php
+		//console.log(state.exercises.radio);
+		
+		var exercises = [
+		//	registrationForm,
+		//	registrationForm,
+		  //getPhrase,
+		  //getPhrase,
+		  //addPhrasesMode,
+		  //addPhrasesMode,
+		  //getImages,
+		  //getImages,
+			makeListeningExercise,
+			checkboxesFour,
+			checkboxesFour,
+			makePhraseExercise,
+			makePhraseExercise,
+			makePhraseExercise,
+		];
 
-	shuffle(exercises);
-	
-	button.onclick = function(){
-		div.innerHTML = "";
-		//divB.innerHTML = "";
-    	var exercise = exercises.pop();
-		if (exercises.length == 0)
-		{
-			button.innerText = "Finish";
-			//button.parentNode.removeChild (button);
+		shuffle(exercises);
+		var otherDiv = document.createElement("div");
+		document.body.appendChild(otherDiv);
+		var button = document.createElement("button");
+		div.appendChild(button);
+		otherDiv.appendChild(button);
+		button.innerText = "Next";
+		button.onclick = function(){
+			div.innerHTML = "";
+			//divB.innerHTML = "";
+			var exercise = exercises.pop();
+			
+			if(exercise && state.counter == 0)
+			{
+				console.log(state.counter);
+				//clearDiv(div);
+				exercise(div, state);
+				/*var button = document.createElement("button");
+				div.appendChild(button);
+				button.innerText = "Next";
+				button.onclick = a();*/
+			}
+			else if(state.wrongExercises.length > 0)
+			{
+				startWrongExercises(div, state);
+			}
+			else
+			{
+				button.innerText = "Finish";
+				//button.parentNode.removeChild (button);
+			}
 		}
-		if(exercise)
-		{
-			exercise(div, state);
-		}
-		else
-		{
-			document.body.innerHTML = "";
-		}
+		
+		exercises.pop()(div, state);
 	}
-	
-	exercises.pop()(div, state);
-
 }
+
+
 
 function showLevel(div, state, level)
 {
@@ -514,7 +834,14 @@ function showLevel(div, state, level)
 		var a = document.createElement("a");
 		a.href = "#";
 		a.sublevel = i+1;
-		a.innerText = `SubLevel ${a.sublevel}`;
+		/* if(i == 0)
+		{
+			a.innerText = `SubLevel ${a.sublevel}`;
+		}
+		else if(i == 1)
+		{
+			
+		} */
 		div.appendChild(a);
 		a.onclick = function (event){
 			event.preventDefault();
@@ -523,10 +850,33 @@ function showLevel(div, state, level)
 				["get-level", `${level}`, `${this.sublevel}`],
 				function (r){
 					console.log(r);
+					
 					state.exercises = r;
+					state.checkboxPhrases = [];
+					state.radioPhrases = [];
+					state.phrases = [];
+					state.listeningPhrases = [];
+					state.imagePhrases=[];
 					clearDiv(div);
+					
+					state.wrongExercises = [];
+					console.log(state);
 					state.imageCount = state.exercises.images.length;
 					state.counter = state.exercises.images.length;
+					console.log(state.exercises.checkbox_phrases.length);
+					state.checkboxCounter = 0;
+					state.phraseCounter = 0;
+					state.listeningCounter = 0;
+					state.radioCounter = 0;
+					state.useWrongImages = false;
+					//state.phrase.length = 0;
+					state.imagesWrong = [];
+					state.phrasesWrong = [];
+					state.checkboxesWrong = [];
+					state.radiosWrong = [];
+					state.listeningWrong = [];
+					state.phrases = [];
+					
 					startExercises(div, state);
 				}
 			);
@@ -536,6 +886,7 @@ function showLevel(div, state, level)
 
 function showMainPage(div, state)
 {
+	
 	for(var i = 0; i < 5; i++)
 	{
 		var a = document.createElement("a");
@@ -544,9 +895,21 @@ function showMainPage(div, state)
 		a.innerText = `Level ${a.level}`;
 		var img = document.createElement("img");
 		img.src = `/_res/level_${a.level}.jpg`;
-		img.height = 60;
-		img.width = 60;
-		img.style = "display: block;"
+		img.height = 120;
+		img.width = 120;
+		if(i < 2)
+		{
+			
+			img.style = "display: inline-block; border-radius: 50px;";
+			
+		}
+		if(i>2)
+		{
+			img.style = "display: block; border-radius: 50px";
+		}
+		
+		
+		img.className = "levels";
 		a.appendChild(img);
 		div.appendChild(a);
 		a.onclick = function (event){
@@ -580,6 +943,25 @@ function getCookie(cname) {
     return "";
 }
 
+function myFunction() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+function filterFunction() {
+    var input, filter, ul, li, a, i;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase();
+    div = document.getElementById("myDropdown");
+    a = div.getElementsByTagName("a");
+    for (i = 0; i < a.length; i++) {
+        if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
+            a[i].style.display = "";
+        } else {
+            a[i].style.display = "none";
+        }
+    }
+}
+
 function clearDiv(div)
 {
 	div.innerHTML = "";
@@ -610,9 +992,13 @@ function showLogin(div, state)
 			function(r){
 				if(r)
 				{
+					state.username = username.value;
+					console.log(state.username);
 					setCookie("username", username.value, 365);
 					setCookie("password", password.value, 365);
+					
 					clearDiv(div);
+					
 					showMainPage(div, state);
 				}
 				else
@@ -623,6 +1009,7 @@ function showLogin(div, state)
 				}
 			}
 		);
+		
 	}
 	
 	var p = document.createElement("p");
@@ -640,6 +1027,11 @@ function showLogin(div, state)
 	
 }
 
+function addNextButton()
+{
+	
+}
+
 function main()
 {	
 	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
@@ -647,6 +1039,8 @@ function main()
 	var state={};
 	
 	var div = document.querySelector('body>main');
+	div.className = "blocky";
+	div.class = "blocky";
 	
 	var username = getCookie("username");
 	var password = getCookie("password");

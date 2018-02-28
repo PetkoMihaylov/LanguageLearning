@@ -61,12 +61,21 @@ function dbInit()
 					   days_played INTEGER NOT NULL,
 					   last_day_played DATE,
 					   level INTEGER NOT NULL,
-					   sublevel INTEGER NOT NULL)
+					   sublevel INTEGER NOT NULL
+					   )
 					   ");
 	if (!$users)
 	{
 		print($db->error);
 	}
+	$language = $db->query("Create table languageprogress(
+						  name VARCHAR(30) UNIQUE NOT NUL,
+						  userID INTEGER NOT NULL,
+						  level INTEGER NOT NULL,
+						  sublevel INTEGER NOT NULL
+						  
+						  )
+						  ");
 	//
    $phrases = $db->query("Create table phrases(
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -213,12 +222,12 @@ function dbInit()
 	
  	$comments = $db->query("Create table comments(
 						   id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+						   comment VARCHAR(256),
 						   userID INT NOT NULL,
 						   FOREIGN KEY (userID) REFERENCES users(id),
 						   phraseID INT NOT NULL,
 						   FOREIGN KEY (phraseID) REFERENCES phrases(id),
-						   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-						   photo VARCHAR(256)
+						   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 						   )
 						   ");
 						   //phraseID how it can connect to the name of the phrase
@@ -248,10 +257,18 @@ function dbInit()
 	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Картина', '$phrase_id', '$language')");
 	
 	
-	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('I _ out today.','1','1','$language')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('I was out today.','1','1','$language')");
 	$phrase_id = $db->insert_id;
-	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('was', '$phrase_id', '$language')");
-	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('had', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Бях навън днес.', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Аз бях навън днес.', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Навън бях днес.', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('Rabbit','1','1','$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Заек', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Зайче', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('А girl is here.','1','1','$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Момичето е тук.', '$phrase_id', '$language')");
 	
 	$insert = $db->query("INSERT INTO radio_phrases(phrase, correct_answer, wrong_answer0, wrong_answer1, wrong_answer2, wrong_answer3, level, sublevel, language) VALUES('I _ out today', 'was', 'had', 'were', 'blue', 'car', '1', '1', '$language')");
 	
@@ -271,6 +288,8 @@ function dbInit()
 	$password = "vasko3";
 	$password_hash = hash("sha512", $password . DB_SALT);
 	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('Vasko2', 'vasko@mail.com', '$password_hash', 'en', 0, 0, 0, 1, 1);");
+	
+	/* $db->query("INSERT INTO comments () VALUES ('Vasko2', 'vasko@mail.com',	'$password_hash', 'en', 0, 0, 0, 1, 1);"); */
 	
 	$db->close();
 	
@@ -313,16 +332,17 @@ function getLevel($level, $sublevel)
 	{
 		$checkbox_phrase = $checkbox_phrases[$i];
 		$checkbox_phrase_id = $checkbox_phrase['id'];
-		$result = $db->query("SELECT * FROM checkbox_answers WHERE phraseId=$phraseId");
+		$result = $db->query("SELECT * FROM checkbox_answers WHERE phraseId=$checkbox_phrase_id");
 		$checkbox_phrases[$i]['answers'] = $result->fetch_all(MYSQLI_ASSOC);
 	}
 	for($i = 0; $i < count($checkbox_phrases); $i++ )
 	{
 		$checkbox_phrase = $checkbox_phrases[$i];
 		$checkbox_phrase_id = $checkbox_phrase['id'];
-		$result = $db->query("SELECT * FROM checkbox_wrong_answers WHERE phraseId=$phraseId");
+		$result = $db->query("SELECT * FROM checkbox_wrong_answers WHERE phraseId=$checkbox_phrase_id");
 		$checkbox_phrases[$i]['wrong_answers'] = $result->fetch_all(MYSQLI_ASSOC);
 	}
+	$word_result = $db -> query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel'");
 
 	$radio_result = $db -> query("SELECT * FROM radio_phrases WHERE level='$level' and sublevel='$sublevel'");
 	$radio_phrases = $radio_result->fetch_all(MYSQLI_ASSOC);
@@ -354,6 +374,16 @@ function login($username, $password)
 	{
 		return false;
 	}
+}
+function getUserLevel($username)
+{
+	$db = dbConnect();
+	print($username);
+	$username = $db->real_escape_string ($username);
+	$result = $db->query("SELECT level, sublevel FROM users WHERE username='$username'");
+	$userLevel = $result->fetch_all(MYSQLI_ASSOC);
+	print_r($userLevel);
+	return $userLevel;
 }
 
 function registerUser($username, $email, $password)
@@ -471,8 +501,231 @@ function addPhrase($phrase, $level, $sublevel, $answers)
 	$db->close();
 }
 
-function checkPhrase($words, $phrase, $input, $printer)
+function check_words($answerWords, $inputWords, $typo, &$correct)
 {
+	for($j = 0; $j < count($answerWords); $j++)
+	{
+		
+		$answer_length = mb_strlen($answerWords[$j]);
+		$input_length = mb_strlen($inputWords[$j]);
+		print("<br>$answerWords[$j] -6=> $inputWords[$j] -7<br>");
+		$sim = mb_similar_text($answerWords[$j], $inputWords[$j], $percent);
+		if($percent < 75 && $answer_length > 3)
+		{
+			$correct = 0;
+			print($correct);
+			print("you");
+		}
+		else if($answerWords[$j] == $inputWords[$j])
+		{
+			//correct word
+			print("all is good=>$percent");
+		}
+		else
+		{
+			//check_words($answerWords, $inputWords, $answer_length, $input_length, $sim, $typo, $j);
+			if($answer_length == $input_length)
+			{
+				if($sim < 4)
+				{
+					
+					if($answer_length == 4)
+					{
+							if($sim == 3)
+							{
+								print("$answerWords[$j] => $inputWords[$j] => typo-1 => $sim");
+								//typo
+								$typo++;
+							}
+					}
+					else if($answer_length == 3)
+					{
+						if($sim == 2)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo-2 => $sim");
+							//typo
+							$typo++;
+						}
+					}
+					else if($answer_length == 2)
+					{
+						/*if($sim == 2)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo => $sim");
+							//typo
+							$typo++;
+							//correct = 1 still
+						}*/
+						/* if($sim == 2)
+						{
+							//correct
+						} */
+						if($sim == 1)
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo-3 => $sim");
+							//typo
+							$typo++;
+						}
+						else
+						{
+							print("$answerWords[$j] => $inputWords[$j] => mistake-1 => $sim");
+							$correct = 0;
+						}
+					}
+					else if($answer_length == 1)
+					{
+						print("show");
+						if($sim == 1)
+						{
+							//correct
+						}
+						else
+						{
+							print("$answerWords[$j] => $inputWords[$j] => typo na 1-bukvena duma => $sim");
+							$typo++;
+						}
+					}
+					else
+					{
+						//incorrect the whole exercise
+						print("$answerWords[$j] => $inputWords[$j] => mistake-2 => $sim");
+						$correct = 0;
+					}
+				}
+				else if($answer_length - 1 == $sim)
+				{
+					print("$answerWords[$j] => $inputWords[$j] => typo-4 => $sim");
+					$typo++;
+				}
+				else
+				{
+					print("$answerWords[$j] => $inputWords[$j] => finalfirstcycle => $answer_length => $input_length => $sim");
+					$correct == 0;
+				}
+					//always answer_length = phrase_length
+			}
+			else if($answer_length == 2)
+			{
+				if($input_length == 3)
+				{
+					if($sim == 2)
+					{
+						print("$answerWords[$j] => $inputWords[$j] => typo-5 => $sim");
+						$typo++;
+					}
+					else
+					{
+						print("$answerWords[$j] => $inputWords[$j] => mistake-3 => $sim");
+						$correct = 0;
+					}
+				}
+				else if($input_length == 1)
+				{
+					if($sim == 1)
+					{
+						print("$answerWords[$j] => $inputWords[$j] => mistake-3.5 but now a typo => $sim");
+						//$correct = 0; // 'y' is not 'ya' désolé but maybe a missed letter won't be fatal
+					}
+					else
+					{
+						print("$answerWords[$j] => $inputWords[$j] => mistake-3.5 => $sim");
+						$correct = 0;
+						
+					}
+				}
+				else if($input_length == 2)
+				{
+					if($sim == 1)
+					{
+						print("$answerWords[$j] => $inputWords[$j] => typo-5.5 => $sim");
+						$typo++;
+					}
+				}
+			}
+			/*else if($answer_length == 3)
+			{
+				
+			}*/
+			else if($answer_length - 1 == $input_length)
+			{
+				if($answer_length - 1 == $sim)
+				{
+					print("$answerWords[$j] => $inputWords[$j] => typo-6 => $sim");
+					$typo++;
+				}
+				else
+				{
+					print("$answerWords[$j] => $inputWords[$j] => mistake-4 => $sim");
+					$correct = 0;
+				}
+			}
+			else if($answer_length + 1 == $input_length)
+			{
+				if($answer_length == $sim)
+				{
+					print("$answerWords[$j] => $inputWords[$j] => typo-7 => $sim");
+					$typo++;
+				}
+				else
+				{
+					print("$answerWords[$j] => $inputWords[$j] => mistake-5 => $answer_length => $input_length => $sim");
+					$correct = 0;
+				}
+			}
+			else
+			{
+				print("$answer_length =< $input_length =< $typo");
+				print("$answerWords[$j] => $inputWords[$j] => final => $answer_length => $input_length => $sim");
+				$correct = 0;
+			}
+		}
+		
+		
+	}
+	return $correct;
+}
+require __DIR__ . '/vendor/autoload.php';
+
+function checkPhrase($input, $answers, $phrase)
+{
+	
+	
+	var_dump($answers);
+	//print_r($answers->answer);
+	//print($answers->answer[0]);
+	//print($answers->answer[1]);
+	/* $input = $_POST["input"];
+	$score = $_POST["score"];
+	$phrase = $_POST["correct_word"]; */
+	print("$input -1| ");
+	print("$phrase -2| ");
+	/*reset($words);
+	while(list($key, $value) = each($words))
+	{
+			echo "Key: $key; Value: $value<br />\n";
+	}
+	foreach ($arr as $key => $value) 
+	{
+		echo "Key: $key; Value: $value<br />\n";
+	}*/
+	
+	//return $words('key' => "value1");
+	/*if(isset($something['say']) && $something['say'] == 'bla') 
+	{
+	
+	}*/
+	/*foreach( $words as $key => $value)
+	$values = array_values($words);
+	print($values[]);
+	*/
+	//print_r(array_values($words));
+	//if the random word is in the array(by checking), then get the values assigned to it
+	//acc_words are accepted words
+	
+	
+	
+	print("$input -3| ");
+	
 	stripslashes($input);
 	//$input = preg_replace(")", "", $input);
 	//($GLOBALS['ctormv'], $GLOBALS['contplace'], $input);
@@ -489,53 +742,172 @@ function checkPhrase($words, $phrase, $input, $printer)
 	{
 		str_replace(array(".", "", $input);
 	} */
-	$answers = $words[$phrase]; 
-	for($i = 0; $i < count($answers); $i++)
+	print_r($answers);
+	
+	for($k = 0; $k < count($answers); $k++)
 	{
-		$answer = $answers[$i];
+		$correct = 1;
+		$typo = 0;
+		$curr_correct = [];
+		$answer = $answers[$k];
 		$answer = preg_replace("/[^[:alnum:][:space:]]/u", '', $answer);
 		$answer = mb_strtolower($answer,  mb_detect_encoding($answer));
-		$sim = similar_text($answer, $input, $percent);
 		
-		//check if percent is big enough, then check
-		$word_count = str_word_count($answer, 0);
-		/*$pizza  = "piece1 piece2 piece3 piece4 piece5 piece6";
-		$pieces = explode(" ", $pizza);*/
-		if($word_count == 1)
+		print("<br><br>$answer -4| $input -5<br><br>");
+		$answerWords = explode(" ", $answer);
+		$inputWords = explode(" ", $input);
+		$answer_length = mb_strlen($answer);
+		$input_length = mb_strlen($input);
+		if($input_length == 0)
 		{
-			if($sim < 4)
+			$correct = 0;
+			break;
+		}
+		else if(count($answerWords) > 0)
+		{
+			if(count($answerWords) == count($inputWords))
 			{
-				//mistake
+				check_words($answerWords, $inputWords, $typo, $correct);
+				print($correct);
 			}
-			else 
+			else if(count($answerWords) != count($inputWords))
 			{
-				//typo
+				$words_spaces = [];
+				$extra_spaces_typo = 0;
+				$words_spaces_new = [];
+				$words_extra_space = [];
+				$input_space_count = substr_count($input, ' ');
+				$answer_space_count = substr_count($input, ' ');
+				$whole_answer = str_replace(' ', '', $answer);
+				$whole_input = str_replace(' ', '', $input);
+				for($j = 0; $j < count($answerWords); $j++)
+				{
+					print("<br>$answerWords[$j] > ");
+				}
+				//$correct = 0;
+				$whole_answer_length = mb_strlen($whole_answer);
+				$whole_input_length = mb_strlen($whole_input);
+				print("$whole_answer => $whole_input");
+				$sim = mb_similar_text($whole_answer, $whole_input, $percent);
+				
+				if($whole_answer_length == $whole_input_length)
+				{
+					print("Whole answer and input => $sim => $percent");
+					if(($whole_answer_length == $sim || $whole_answer_length - 1 == $sim) && $percent > 90)
+					{
+						/* for($v = 0; $v < count($answerWords); $v++)
+						{
+							//$new_input = str_replace($healthy)
+						} */
+						for($j = 0; $j < count($answerWords); $j++)
+						{
+							if($j == 0)
+							{
+								if (strstr($input, "$answerWords[$j] "))
+								{						
+									echo "<br>$input -> non $answerWords[$j] yes ";
+									$words_spaces[$j] = $answerWords[$j];
+								}
+								else
+								{
+							
+									$extra_spaces_typo += 1;
+								}
+							}
+							else if($j == count($answerWords) - 1)
+							{
+								if (strstr($input, " $answerWords[$j]"))
+								{						
+									echo "<br>$input -> yes $answerWords[$j] non";
+									$words_spaces[$j] = $answerWords[$j];
+								}
+								else
+								{
+									$words_spaces[$j] = "_";
+									$extra_spaces_typo += 1;
+								}
+								
+							}
+							else if($j>0 && $j < count($answerWords) - 1)
+							{
+								if (strstr($input, " $answerWords[$j] "))
+								{						
+									echo "<br>$input -> yes $answerWords[$j] yes";
+									$words_spaces[$j] = $answerWords[$j];
+								}
+								else
+								{
+									$words_spaces[$j] = "_";
+									$extra_spaces_typo += 1;
+								}
+								$all_words = $answerWords[$j];
+								
+							}
+							else
+							{
+								$correct = 0;
+							}
+							
+							for($i = 0; $i < count($words_spaces); $i++)
+							{
+								if($words_spaces[$j] == "_")
+								{
+									$words_extra_space[$j] = $answerWords[$j];
+								}
+								else
+								{
+									$words_extra_space[$j] = "_";
+								}
+							}
+							print($extra_spaces_typo);
+							print_r($words_spaces);
+							print_r($words_extra_space);
+							//$correct = 1;
+							
+							
+						}
+					}
+					else
+					{
+						$correct = 0;
+					}
+					
+				}
+				else
+				{
+					$correct = 0;
+					$counter = 0;
+					$extra_spaces = 0;
+				}
+			}
+			
+			else
+			{
+				$correct = 0;
 			}
 		}
-		else if($word_count == 2)
+		else
 		{
-			//print($input . " | " . $answer );
-			//$printer = "you shall pass";
-			//$inputWords = explode(" ", $input);
-			//$answerWords = explode(" ", $answer);
-			/* for($i = 0; i < count(answerWords); i++)
-			{
-				print($answerWords[i]);
-			} */
-			//check the strlen of both input and answers every time
-			//check word by word to see if there is a typo in some word
-			//thsen
+			$correct = 0;
 		}
-		
-		if($input == $answer)
+		//$curr_correct[$j] = $correct;
+		if($correct == 1)
 		{
-			return true;
+			break;
 		}
-		
-	
 	}
 	
-	return false;
+	if($correct == 1)
+	{
+		print("correct | $typo | ");
+		$score++;
+		return true;
+	}
+	else
+	{
+		$score = 0;
+		return false;
+	}
 }
 
 
@@ -547,7 +919,16 @@ function incrementScore($db)
 	$db->query("UPDATE users SET points = $score WHERE id = 1");
 }
 
-
+function getPhraseComments($phraseId, $from, $commentCount)
+{
+	$db = dbConnect();
+	$phraseId = $db->real_escape_string($phraseId);
+	$from = $db->real_escape_string($from);
+	$commentCount = $db->real_escape_string($commentCount);
+	$result = $db->query("SELECT * FROM comments WHERE phraseId=$phraseId LIMIT $commentCount");
+	$comments = $result->fetch_all(MYSQLI_ASSOC);
+	return $comments;
+}
 
 /*
 $db = new mysqli("localhost", "root", "root", "words");
@@ -578,15 +959,17 @@ else if($command[0] == "get-phrase")
 }
 else if($command[0] == "check-phrase")
 {
-	$phrase = $command[1];
-	$input = $command[2];
+	$input = $command[1];
+	$answers = $command[2];
+	$phrase = $command[3];
+	print($command[4]);
 	//$printer = "s";
-	$checkPhraseResult = checkPhrase($words, $phrase, $input);
+	$checkPhraseResult = checkPhrase($input, $answers, $phrase);
 	//print($printer);
 	//$comments = getComments($phrase);
 	$result = [
 		'result' => $checkPhraseResult,
-		'correctPhrase' => $words[$phrase][0],
+		//'correctPhrase' => $words[$phrase][0],
 		//'comments' => $comments]
 	];
 	/*$printer = [
@@ -613,6 +996,11 @@ else if($command[0] == "register-user")
 	$result = registerUser($command[1], $command[2], $command[3]);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
+else if($command[0] == "get-user-level")
+{
+	$result = getUserLevel($command[1]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
 else if($command[0] == "login")
 {
 	$result = login($command[1], $command[2]);
@@ -622,6 +1010,11 @@ else if($command[0] == "get-words-checkbox")
 {
 	$limit = 2;
 	$result = getWordCheckbox($limit);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "get-phrase-comments")
+{
+	$result = getPhraseComments($command[1], 0, 30);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "add-phrase")
