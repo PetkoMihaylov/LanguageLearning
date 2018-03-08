@@ -59,7 +59,6 @@ function sendCommand(command, callback, json=true)
 	{
 		request.responseType = "json";
 	}
-	//request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	request.send(JSON.stringify(command));
 }
 
@@ -235,8 +234,8 @@ function makePhraseExercise(div, state)
 				else
 				{
 					state.phrasesWrong.push(state.phraseCounter);
-				}, false
-			}
+				}
+			}, false
 		);
 		console.log(state.exercises.phrases[state.phraseCounter].id);
 		getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
@@ -321,7 +320,13 @@ function callback(state, response)
 function showImages(div, state)
 {
 	var container = div;
+	var div = document.createElement("div");
+	div.className = "button-container";
 	var itemContainer = document.createElement("div");
+	var p = document.createElement("p");
+	itemContainer.appendChild(p);
+	var ul = document.createElement("ul");
+	itemContainer.appendChild(ul);
 	container.appendChild(itemContainer);
 	itemContainer.id = "itemContainer";
 	//document.body.appendChild(container);
@@ -359,8 +364,7 @@ function showImages(div, state)
 	incorrectWords.push(incorrectWordOne, incorrectWordTwo);
 	allWords = emptyJoin.concat(words, incorrectWords);
 	
-	var p = document.createElement("p");
-	itemContainer.appendChild(p);
+	
 	p.innerText = word;
 	//}
 	//console.log(words);
@@ -376,23 +380,18 @@ function showImages(div, state)
 	for(var i = 0; i < 3; i++)
 	{
 		var li = document.createElement("li");
-		var div = document.createElement("div");
-		div.className = "images";
-		itemContainer.appendChild(li);
-		li.appendChild(div);
 		var label = document.createElement("label");
-		div.appendChild(label);
-		
+		li.appendChild(label);
+		ul.appendChild(li);
 		var img = document.createElement("img");
-		div.appendChild(img);
+		li.appendChild(img);
 		imgs.push(img);
 		console.log(imgs);
 		var inp = document.createElement("input");
-		div.appendChild(inp);
+		li.appendChild(inp);
 		inps.push(inp);
 		inp.type = "radio";
 		inp.name = "choice";
-		inp.style = "display: inline-block; cursor:pointer; float: center; position: absolute; margin: 139px 102px -130px -115px;";
 		inp.value = `${allWords[i]}`;
 		console.log (i + allWords[i]);
 		img._name = words[i];
@@ -402,13 +401,13 @@ function showImages(div, state)
 		img.id = `img${i}`;
 		//img.style = "float: centre";
 		var span = document.createElement("span");
-		div.appendChild(span);
 		span.id = `spanimage${i}`;
 		span.innerText = `${allWords[i]}`;
 		//label.text = `${allWords[i]}`;
 		//p.style = "display: inline-block;";
 		label.appendChild(img);
 		label.appendChild(inp);
+		label.appendChild(span);
 		
 		img.addEventListener (
 			'click',
@@ -426,8 +425,9 @@ function showImages(div, state)
 		);
 	}
 	var button = document.createElement("button");
-	itemContainer.appendChild(button);
-	button.textContent = "Check";
+	itemContainer.appendChild(div);
+	div.appendChild(button);
+	button.textContent = "Провери";
 	button.onclick = function() 
 	{
 		button.parentNode.removeChild(button);
@@ -444,8 +444,8 @@ function showImages(div, state)
 		}
 	}
 	var buttonC = document.createElement("button");
-	itemContainer.appendChild(buttonC);
 	buttonC.textContent="Continue";
+	div.appendChild(buttonC);
 	if(!state.doWrongExercise)
 	{
 		state.counter--;
@@ -499,12 +499,14 @@ function makeCheckboxes(phraseIndex, div, state)
 	
 	//t.innerText = phraseName;
 	//print(phraseName);
-	var t = (" ?");
+	var q = document.createTextNode("?");
+	p.appendChild(q);
 	var form = document.createElement("form");
 	div.appendChild(p);
 	
 	div.appendChild(form);
 	var ul = document.createElement("ul");
+	ul.id = "checkbox-ul";
 	form.appendChild(ul);
 	var checkboxes = [];
 	for(var i = 0; i < mixed_answers.length; i++)
@@ -527,7 +529,10 @@ function makeCheckboxes(phraseIndex, div, state)
 			button.disabled = true;
 		}
 		label.appendChild(checkbox);
-		label.appendChild(document.createTextNode(mixed_answers[i].answer));
+		var span = document.createElement("span");
+		span.innerText = `${mixed_answers[i].answer}`;
+		label.appendChild(span);
+		//label.appendChild(document.createTextNode(mixed_answers[i].answer));
 		checkboxes.push(checkbox);		
 	}
 	var button = document.createElement("button");
@@ -676,40 +681,20 @@ function checkboxesFour(div, state)
 
 function registrationForm(div)
 {
-	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
-	//var state = {};
-	//state.phrase = undefined;
-	
-	//playAudio(state);
-	
-	//getPhrase(state);
-	
 	var form = document.createElement("form");
 	div.appendChild(form);
 	var input = document.createElement("input");
-	/* form.onsubmit = function(event){
-		event.preventDefault(); //always first
-		console.log(2);
-		sendCommand(
-			["check-phrase", state.phrase, input.value],
-			function (response)
-			{
-				callback (state, response);
-			}
-		);
-	}; */
-	
 	var registerForm = document.createElement("form");
 	var username = document.createElement("input");
 	var email = document.createElement("input");
 	var password = document.createElement("input");
 	var button = document.createElement("button");
+	
 	button.type = "submit";
 	button.innerText = "Register"
 	password.type = "password";
 	div.appendChild(registerForm);
 	registerForm.appendChild(username);
-	//make them a type
 	registerForm.appendChild(email);
 	registerForm.appendChild(password);
 	registerForm.appendChild(button);
@@ -751,35 +736,19 @@ function startWrongExercises(div, state)
 	if(state.wrongExercises.length > 0)
 	{
 		state.doWrongExercise = true;
-		console.log("2");
 		state.wrongExercises[0].exercise(div, state);
 	}	
-	console.log("3");
 }
 
 function startExercises(div, state)
 {
-	console.log(state.counter);
 	if(state.counter > 0)
 	{
 		showImages(div, state);
-		
 	}
 	else
 	{
-		
-		//add table in api.php
-		//console.log(state.exercises.radio);
-		
 		var exercises = [
-		//	registrationForm,
-		//	registrationForm,
-		  //getPhrase,
-		  //getPhrase,
-		  //addPhrasesMode,
-		  //addPhrasesMode,
-		  //getImages,
-		  //getImages,
 			makeListeningExercise,
 			checkboxesFour,
 			checkboxesFour,
@@ -787,28 +756,21 @@ function startExercises(div, state)
 			makePhraseExercise,
 			makePhraseExercise,
 		];
-
 		shuffle(exercises);
 		var otherDiv = document.createElement("div");
 		document.body.appendChild(otherDiv);
 		var button = document.createElement("button");
 		div.appendChild(button);
 		otherDiv.appendChild(button);
-		button.innerText = "Next";
+		button.innerText = "Пропусни";
 		button.onclick = function(){
 			div.innerHTML = "";
-			//divB.innerHTML = "";
 			var exercise = exercises.pop();
 			
 			if(exercise && state.counter == 0)
 			{
 				console.log(state.counter);
-				//clearDiv(div);
 				exercise(div, state);
-				/*var button = document.createElement("button");
-				div.appendChild(button);
-				button.innerText = "Next";
-				button.onclick = a();*/
 			}
 			else if(state.wrongExercises.length > 0)
 			{
@@ -817,10 +779,8 @@ function startExercises(div, state)
 			else
 			{
 				button.innerText = "Finish";
-				//button.parentNode.removeChild (button);
 			}
 		}
-		
 		exercises.pop()(div, state);
 	}
 }
@@ -829,20 +789,19 @@ function startExercises(div, state)
 
 function showLevel(div, state, level)
 {
+	
+	var ul = document.createElement("ul");
+	div.appendChild(ul);
 	for(var i = 0; i < 5; i++)
 	{
+		var li = document.createElement("li");
+		ul.appendChild(li);
 		var a = document.createElement("a");
+		li.appendChild(a);
 		a.href = "#";
 		a.sublevel = i+1;
-		/* if(i == 0)
-		{
+
 			a.innerText = `SubLevel ${a.sublevel}`;
-		}
-		else if(i == 1)
-		{
-			
-		} */
-		div.appendChild(a);
 		a.onclick = function (event){
 			event.preventDefault();
 			clearDiv(div);
@@ -886,32 +845,26 @@ function showLevel(div, state, level)
 
 function showMainPage(div, state)
 {
-	
+	var ul = document.createElement("ul");
+	div.appendChild(ul);
 	for(var i = 0; i < 5; i++)
 	{
+		var li = document.createElement("li");
+		ul.appendChild(li);
 		var a = document.createElement("a");
+		li.appendChild(a);
 		a.href = "#";
 		a.level = i+1;
-		a.innerText = `Level ${a.level}`;
 		var img = document.createElement("img");
 		img.src = `/_res/level_${a.level}.jpg`;
+		
 		img.height = 120;
 		img.width = 120;
-		if(i < 2)
-		{
-			
-			img.style = "display: inline-block; border-radius: 50px;";
-			
-		}
-		if(i>2)
-		{
-			img.style = "display: block; border-radius: 50px";
-		}
 		
 		
 		img.className = "levels";
 		a.appendChild(img);
-		div.appendChild(a);
+		a.appendChild(document.createTextNode( `Level ${a.level}`));
 		a.onclick = function (event){
 			event.preventDefault();
 			clearDiv(div);
@@ -925,6 +878,7 @@ function setCookie(cname, cvalue, exdays) {
     d.setTime(d.getTime() + (exdays*24*60*60*1000));
     var expires = "expires="+ d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+	//setCookie("username", "", 0); delete cookie;
 }
 
 function getCookie(cname) {
@@ -943,8 +897,8 @@ function getCookie(cname) {
     return "";
 }
 
-function myFunction() {
-    document.getElementById("myDropdown").classList.toggle("show");
+function languageChoice() {
+    document.getElementById("languageDropdown").classList.toggle("show");
 }
 
 function filterFunction() {
@@ -966,6 +920,7 @@ function clearDiv(div)
 {
 	div.innerHTML = "";
 }
+
 function showLogin(div, state)
 {
 	console.log(1);
@@ -1034,7 +989,8 @@ function addNextButton()
 
 function main()
 {	
-	//sendCommand(["init-db"], function(r) {console.log (r);}, false);
+	
+	sendCommand(["init-db"], function(r) {console.log (r);}, false);
 
 	var state={};
 	

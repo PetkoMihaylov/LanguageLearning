@@ -31,6 +31,61 @@ main
 	align-items: center;
 }
 
+ul
+{
+	display: flex;
+	padding: 0;
+    justify-content: center;
+	list-style: none;
+}
+
+#checkbox-ul
+{
+    display: block;
+}
+
+ul>li
+{
+	margin: 0 0.25em;
+	/* flex: 1 0 20%; */
+}
+
+.button-container
+{
+	display: flex;
+	padding: 0;
+    justify-content: center;
+}
+
+#log
+{
+	float: right;
+}
+main>input
+{
+padding-bottom: 150px;
+    padding-right: 200px;
+    background-color: #b7b7b7;
+    margin-left: 150px;
+    display: block;
+	    font-size: 23px;
+}
+main>span
+{
+	background-color: blue;
+}
+p
+{
+    background-color: #8fa98b;
+    color: #100404;
+    font-size: 25px
+}
+
+ul>li>label>img
+{
+	display: block;
+}
+
 main>div>label>img
 {
 	/*position: relative;
@@ -44,17 +99,73 @@ main>div>label>img
 	border-radius: 8px;
 }
 
+.button {
+  background: #3498db;
+  background-image: -webkit-linear-gradient(top, #3498db, #2980b9);
+  background-image: -moz-linear-gradient(top, #3498db, #2980b9);
+  background-image: -ms-linear-gradient(top, #3498db, #2980b9);
+  background-image: -o-linear-gradient(top, #3498db, #2980b9);
+  background-image: linear-gradient(to bottom, #3498db, #2980b9);
+  -webkit-border-radius: 28;
+  -moz-border-radius: 28;
+  border-radius: 28px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.button:hover {
+  background: #3cb0fd;
+  background-image: -webkit-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -moz-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -ms-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: -o-linear-gradient(top, #3cb0fd, #3498db);
+  background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
+  text-decoration: none;
+}
+#checkbox-ul>li>label
+{
+	    display: block;
+    padding-top: 5px;
+    border: solid;
+    padding-right: 300px;
+    background-color: #a2a2a2;
+    font-size: 15px;
+    color: black;
+}
+#checkbox-ul>li>label:hover
+{
+	background-color: #b97500;
+}
+#checkbox-ul>li
+{
+	      display: block;
+}
+
 li
 {
 	align-items: center;
 }
 
-#itemContainer
+#itemContainer>ul
 {
-	    position: absolute;
+	
+	   /*  position: absolute;
        margin: 0 auto;
     margin-left: 30%;
-    margin-right: 0%;
+    margin-right: 0%; */
+}
+
+li>a>img
+{
+	display:block;
+}
+li>a
+{
+	display:block;
+	text-align: center;
 }
 
 li:hover
@@ -90,11 +201,11 @@ main>div>li>div>p
 main>div>li>div>span
 {
 	/* property: inherit; */
-	position: absolute;
+	/* position: absolute;
     margin-left: -100px;
     margin-bottom: -156px;
     margin-right: 100px;
-    margin-top: 136px;
+    margin-top: 136px; */
 	color: black;
     font-weight: bold;
     font-style: normal;
@@ -134,9 +245,9 @@ main>div>li>div.images
 
 .images>label>img
 {
-	margin-bottom: 48px;
+	/* margin-bottom: 48px;
     margin-left: 10px;
-    margin-right: 10px;
+    margin-right: 10px; */
 }
 .images
 {
@@ -199,6 +310,7 @@ body>div
 .dropdown {
     position: relative;
     display: inline-block;
+	float: right;
 }
 
 .dropdown-content {
@@ -217,7 +329,10 @@ body>div
     text-decoration: none;
     display: block;
 }
-
+#languageDropdown
+{
+	float: right;
+}
 .dropdown a:hover {background-color: #ddd}
 
 .show {display:block;}
