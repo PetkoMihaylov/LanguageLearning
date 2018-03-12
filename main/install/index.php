@@ -56,7 +56,8 @@ function dbInit($password)
 	$db->close();
 	$db = new mysqli("localhost", "root", "root", "words");
 	
-	$users = $db->query("Create table users (
+	$users = $db->query("
+						Create table users (
                        id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
 					   username VARCHAR(50) UNIQUE,
 					   password VARCHAR(128),
