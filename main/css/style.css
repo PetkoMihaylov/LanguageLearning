@@ -3,11 +3,29 @@ body>div>div
 	width: 150px;
 	/* text-align: center; */
 }
+label
+{
+	margin-bottom: 0px;
+}
+label:hover
+{
+	margin-bottom: 0px;
+	background-color: #b7b7b7;
+}
+
+#username
+{
+    font-size: 16px;
+    color: #fdfbfb;
+	font-style: oblique;
+	background-color: #222222;
+	padding-left:10px;
+}
 body
 {
 	font-family: times;
 	font-weight: bold;
-	background-color: #400000;
+	background-color: #f1eaea;
 }
 li>div>label
 {
@@ -17,7 +35,7 @@ li>div>label
 
 li>div>label:hover
 {
-	background-color: gray;
+	
 }
 
 .level
@@ -47,7 +65,13 @@ ul
 ul>li
 {
 	margin: 0 0.25em;
+	border-style: double;
 	/* flex: 1 0 20%; */
+}
+
+.button 
+{
+
 }
 
 .button-container
@@ -57,9 +81,13 @@ ul>li
     justify-content: center;
 }
 
-#log
-{
-	float: right;
+#log {
+    float: right;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
 }
 main>input
 {
@@ -72,7 +100,9 @@ padding-bottom: 150px;
 }
 main>span
 {
-	background-color: blue;
+	background-color: #f1eaea;
+	
+    font-size: 20px;
 }
 p
 {
@@ -137,7 +167,7 @@ main>div>label>img
 }
 #checkbox-ul>li>label:hover
 {
-	background-color: #b97500;
+	background-color: #d8d8d8;
 }
 #checkbox-ul>li
 {

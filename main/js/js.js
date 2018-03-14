@@ -1,5 +1,5 @@
 ﻿"use strict";
-
+var language = "en"; //by default
 function playAudio(phrase)
 {
 	const msg = new SpeechSynthesisUtterance();
@@ -36,7 +36,7 @@ function playAudio(phrase)
 	voicesDropdown.addEventListener('change', setVoice);
 	options.forEach(option => option.addEventListener('change', setOption));
 	speakButton.addEventListener('click', toggle);
-	stopButton.addEventListener('click', () => toggle(false));
+	//stopButton.addEventListener('click', () => toggle(false));
 }
 
 function sendCommand(command, callback, json=true)
@@ -67,6 +67,19 @@ function incrementScore()
 	sendCommand(["increment-score"]);
 }
 
+function switchLanguageEn()
+{
+	language = "en";
+	console.log(language);
+	document.getElementById("languageDropdown").className = "dropdown-content hidden";
+}
+function switchLanguageFr()
+{
+	language = "fr";
+	console.log(language);
+	document.getElementById("languageDropdown").className = "dropdown-content hidden";
+}
+
 function makeRadioExercise(div, state)
 {
 	var p = document.createElement("p");
@@ -89,11 +102,11 @@ function makeListeningExercise(div, state)
 		div.appendChild(select);
 		select.name = "voice";
 		select.id = "voices";
-		var option = document.createElement("option");
+		/* var option = document.createElement("option");
 		select.appendChild(option);
 		option.innerText = "Select";
-		option.value = "";
-		var input = document.createElement("input");
+		option.value = ""; */
+		/*var input = document.createElement("input");
 		div.appendChild(input);
 		input.name = "rate";
 		input.type = "range";
@@ -107,14 +120,15 @@ function makeListeningExercise(div, state)
 		inputTwo.type = "range";
 		inputTwo.min = "0";
 		inputTwo.max = "2";
-		inputTwo.step = "0.1";
-		var stopButton = document.createElement("button");
+		inputTwo.step = "0.1"; */
+		/* var stopButton = document.createElement("button");
 		div.appendChild(stopButton);
-		stopButton.id = "stop";
+		stopButton.id = "stop"; */
 		var speakButton = document.createElement("button");
 		div.appendChild(speakButton);
 		speakButton.id = "speak";
 		speakButton.innerText = "Пусни изречението";
+		speakButton.className = "btn btn-secondary";
 		speakButton.onclick = playAudio(phrase);
 	
 	
@@ -125,10 +139,10 @@ function makeListeningExercise(div, state)
 		var space = document.createElement("span");
 		space.innerText = ' ';
 		showPhrase.innerText = `${phraseWords[wordCount]}`;
-		div.appendChild(showPhrase);
+		//div.appendChild(showPhrase);
 		if(wordCount + 1 != phraseWords.length)
 		{
-			div.appendChild(space);
+			//div.appendChild(space);
 		}
 		//showPhrase.innerText
 		//p.appendChild(showPhrase)
@@ -149,8 +163,11 @@ function makeListeningExercise(div, state)
 	
 	var form = document.createElement("form");
 	var button = document.createElement("button");
+	button.disabled = true;
 	button.innerText= "Провери";
+	button.className = "btn btn-secondary";
 	button.type = "submit";
+	if(phraseInput)
 	form.appendChild(button);
 	div.appendChild(form);
 	form.onsubmit = function (event) {
@@ -219,6 +236,7 @@ function makePhraseExercise(div, state)
 	var form = document.createElement("form");
 	var button = document.createElement("button");
 	button.innerText= "Провери";
+	button.className = "btn btn-secondary";
 	button.type = "submit";
 	form.appendChild(button);
 	div.appendChild(form);
@@ -227,9 +245,12 @@ function makePhraseExercise(div, state)
 		sendCommand(
 			["check-phrase", phraseInput.value, phraseAnswers, phrase], 
 			function (r){
-				if(r.correct)
+				console.log(r);
+				if(r)
 				{
-					
+					console.log(phraseInput.value);
+					console.log(phraseAnswers);
+					console.log(phrase);
 				}
 				else
 				{
@@ -238,7 +259,7 @@ function makePhraseExercise(div, state)
 			}, false
 		);
 		console.log(state.exercises.phrases[state.phraseCounter].id);
-		getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
+		//getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
 	}
 	state.phraseCounter++;
 }
@@ -309,8 +330,9 @@ function callback(state, response)
 	}
 	
 	var button = document.createElement("button");
+	button.className = "btn btn-secondary";
 	div.appendChild(button);
-	button.textContent="Continue";
+	button.innerText="Continue";
 	button.onclick = function()
 	{
 		getPhrase(state);
@@ -425,6 +447,7 @@ function showImages(div, state)
 		);
 	}
 	var button = document.createElement("button");
+	button.className = "btn btn-secondary";
 	itemContainer.appendChild(div);
 	div.appendChild(button);
 	button.textContent = "Провери";
@@ -445,6 +468,7 @@ function showImages(div, state)
 	}
 	var buttonC = document.createElement("button");
 	buttonC.textContent="Пропусни";
+	buttonC.className = "btn btn-secondary";
 	div.appendChild(buttonC);
 	if(!state.doWrongExercise)
 	{
@@ -541,6 +565,7 @@ function makeCheckboxes(phraseIndex, div, state)
 	button.disabled = true;
 	button.type = "submit";
 	button.innerText = "Провери";
+	button.className = "btn btn-secondary";
 	form.appendChild(button);
 	form.onsubmit = function (event) {
 		event.preventDefault();
@@ -626,6 +651,7 @@ function addPhrasesMode(div)
 	
 	button.type = "submit";
 	button.innerText = "check";
+	button.className = "btn btn-secondary";
 	div.appendChild(form);
 	form.appendChild(button);
 	form.appendChild(phraseLabel);
@@ -679,8 +705,14 @@ function checkboxesFour(div, state)
 	makeCheckboxes(phraseIndex, div, state);
 }
 
-function registrationForm(div)
+function registrationForm(div, state)
 {
+	
+	var button = document.getElementById("log");
+	button.addEventListener('click', function(){
+		clearDiv(div);
+		showLogin(div, state);
+	})
 	var form = document.createElement("form");
 	div.appendChild(form);
 	var input = document.createElement("input");
@@ -689,9 +721,12 @@ function registrationForm(div)
 	var email = document.createElement("input");
 	var password = document.createElement("input");
 	var button = document.createElement("button");
-	
+	username.placeholder = "Desired username";
+	email.placeholder = "Email";
+	password.placeholder = "Password";
 	button.type = "submit";
-	button.innerText = "Register"
+	button.innerText = "Register";
+	button.className = "btn btn-primary";
 	password.type = "password";
 	div.appendChild(registerForm);
 	registerForm.appendChild(username);
@@ -762,6 +797,7 @@ function startExercises(div, state)
 		var button = document.createElement("button");
 		otherDiv.appendChild(button);
 		button.innerText = "Пропусни";
+		button.className = "btn btn-secondary";
 		button.onclick = function(){
 			div.innerHTML = "";
 			var exercise = exercises.pop();
@@ -820,6 +856,12 @@ function showLevel(div, state, level)
 		a.sublevel = i+1;
 
 			a.innerText = `SubLevel ${a.sublevel}`;
+			var img = document.createElement("img");
+		img.src = `/../images/level_${level}_${a.sublevel}.jpg`;
+		
+		img.height = 120;
+		img.width = 120;
+		a.appendChild(img);
 		a.onclick = function (event){
 			event.preventDefault();
 			clearDiv(div);
@@ -918,7 +960,7 @@ function getCookie(cname) {
 }
 
 function languageChoice() {
-    document.getElementById("languageDropdown").classList.toggle("show");
+    document.getElementById("languageDropdown").className = "dropdown-content show";
 }
 
 function filterFunction() {
@@ -943,14 +985,26 @@ function clearDiv(div)
 
 function showLogin(div, state)
 {
+	clearDiv(div);
+	var p = document.createElement("p");
+	div.appendChild(p);
+	var a = document.createElement("a");
+	a.innerText = "Register";
+	a.href = "#";
+	p.appendChild(a);
 	console.log(1);
 	var form = document.createElement("form");
 	var username = document.createElement("input");
+	var label = document.createElement("label");
+	username.placeholder="Username";
+	
 	username.type = "text";
 	var password = document.createElement("input");
+	password.placeholder="Password";
 	password.type = "password";
 	var button = document.createElement("button");
 	button.innerText = "Login";
+	button.className = "btn btn-primary";
 	button.type = "submit";
 	div.appendChild(form);
 	form.appendChild(username);
@@ -967,13 +1021,27 @@ function showLogin(div, state)
 			function(r){
 				if(r)
 				{
+					var p = document.getElementById("username");
+					p.innerText = username.value;
 					state.username = username.value;
 					console.log(state.username);
 					setCookie("username", username.value, 365);
 					setCookie("password", password.value, 365);
-					
 					clearDiv(div);
-					
+					var button = document.getElementById("log");
+					button.innerText = "Излез";
+					button.addEventListener (
+						'click',
+						function(e)
+						{
+							setCookie("username", "", 0);
+							setCookie("password", "", 0);
+							p.innerText = "";
+							clearDiv(div);
+							button.innerText = "Влез";
+							showLogin(div, state);
+						}
+					);
 					showMainPage(div, state);
 				}
 				else
@@ -987,12 +1055,7 @@ function showLogin(div, state)
 		
 	}
 	
-	var p = document.createElement("p");
-	div.appendChild(p);
-	var a = document.createElement("a");
-	a.innerText = "Register";
-	a.href = "#";
-	p.appendChild(a);
+	
 	a.onclick = function(event) {
 		event.preventDefault();
 		div.innerHTML="";
@@ -1002,22 +1065,20 @@ function showLogin(div, state)
 	
 }
 
-function addNextButton()
+/* function addNextButton()
 {
 	
-}
+} */
 
 function main()
 {	
-	
-	sendCommand(["init-db"], function(r) {console.log (r);}, false);
-
 	var state={};
 	
 	var div = document.querySelector('body>main');
 	div.className = "blocky";
 	div.class = "blocky";
-	
+	var button = document.getElementById("log");
+	button.innerText = "Влез";
 	var username = getCookie("username");
 	var password = getCookie("password");
 	if(username && password)
@@ -1030,7 +1091,26 @@ function main()
 			function(r){
 				if(r)
 				{
+					var button = document.getElementById("log");
+					button.innerText = "Излез";
+					button.addEventListener (
+						'click',
+						function(e)
+						{
+							setCookie("username", "", 0);
+							setCookie("password", "", 0);
+							var p = document.getElementById("username");
+							p.innerText = "";
+							clearDiv(div);
+							button.innerText = "Влез";
+							showLogin(div, state);
+						}
+					);
+					
+					var p = document.getElementById("username");
+					p.innerText = `${username}`;
 					showMainPage(div, state);
+					
 				}
 				else
 				{

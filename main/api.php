@@ -695,7 +695,10 @@ else if($command[0] == "check-phrase")
 	$input = $command[1];
 	$answers = $command[2];
 	$phrase = $command[3];
-	print($command[4]);
+	print($input);
+	print_r($answers);
+	print($phrase);
+	//print($command[4]);
 	//$printer = "s";
 	$checkPhraseResult = checkPhrase($input, $answers, $phrase);
 	//print($printer);
