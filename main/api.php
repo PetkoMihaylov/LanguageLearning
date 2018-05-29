@@ -2,23 +2,6 @@
 //header('Content-Type: application/json');
 define("DB_SALT", "1234rfkgjalvj0q4wjpvaFAFA!@$%kdv;awij09w4fskfer;vner;jlvnaer-");
 
-$words = [
-   "blue"=>["Синьо", "Син"],
-   "building"=>["Сграда"], 
-   "horse"=>["Кон", "Конче"],
-   "rabbit"=>["Заек", "Зайче"],
-   "I was out today."=>["Бях навън днес.", "Днес бях навън.", "Навън бях днес."],
-   "I had work today."=>["Имах работа днес.", "Днес имах работа."]
-];
-
-
-$incorrect_words = [
-	"I was out today." => ["Бях на навън днес.", "Бях навън вчера.", "Бях на вън откъде.", "Навън бях вчера."],
-	"I had work today." => ["Днес беше тъмно.","Беше тъмно утре."]
-];
-//$printer = "babati";
-//protected $ctormv = ('/ ,/' , '/= /', '/ =/', '/ -/', '/- /');
-//protected $contplace = ('', '', '', '', '');
 
 function dbConnect()
 {
@@ -32,14 +15,14 @@ function dbConnect()
 
 
 
-function getLevel($level, $sublevel)
+function getLevel($level, $sublevel, $language)
 {
 	$db = dbConnect();
 	$level = $db->real_escape_string ($level);
 	$sublevel = $db->real_escape_string ($sublevel);
-	$images_result = $db->query("SELECT * FROM image_words WHERE level='$level' and sublevel='$sublevel'");
+	$images_result = $db->query("SELECT * FROM image_words WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$images = $images_result->fetch_all(MYSQLI_ASSOC);
-	$words_result = $db->query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel'");
+	$words_result = $db->query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$words = $words_result->fetch_all(MYSQLI_ASSOC);
 	for($i = 0; $i < count($words); $i++)
 	{
@@ -48,7 +31,7 @@ function getLevel($level, $sublevel)
 		$words[$i]['translations'] = $words_translations_result->fetch_all(MYSQLI_ASSOC);
 	}
 	
-	$phrases_result = $db->query("SELECT * FROM phrases WHERE level='$level' and sublevel='$sublevel'");
+	$phrases_result = $db->query("SELECT * FROM phrases WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$phrases = $phrases_result->fetch_all(MYSQLI_ASSOC);
 	for($i = 0; $i < count($phrases); $i++)
 	{
@@ -57,7 +40,7 @@ function getLevel($level, $sublevel)
 		$phrases[$i]['answers'] = $answers_result->fetch_all(MYSQLI_ASSOC);
 	}
 
-	$checkbox_result = $db -> query("SELECT * FROM checkbox_phrases WHERE level='$level' and sublevel='$sublevel'");
+	$checkbox_result = $db -> query("SELECT * FROM checkbox_phrases WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$checkbox_phrases = $checkbox_result->fetch_all(MYSQLI_ASSOC);
 	for($i = 0; $i < count($checkbox_phrases); $i++ )
 	{
@@ -73,9 +56,9 @@ function getLevel($level, $sublevel)
 		$result = $db->query("SELECT * FROM checkbox_wrong_answers WHERE phraseId=$checkbox_phrase_id");
 		$checkbox_phrases[$i]['wrong_answers'] = $result->fetch_all(MYSQLI_ASSOC);
 	}
-	$word_result = $db -> query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel'");
+	$word_result = $db -> query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 
-	$radio_result = $db -> query("SELECT * FROM radio_phrases WHERE level='$level' and sublevel='$sublevel'");
+	$radio_result = $db -> query("SELECT * FROM radio_phrases WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$radio_phrases = $radio_result->fetch_all(MYSQLI_ASSOC);
 	
 
@@ -645,11 +628,37 @@ function checkPhrase($input, $answers, $phrase)
 
 function incrementScore($username)
 {
-	$dbConnect();
+	$db = $dbConnect();
 	$result = $db->query("SELECT score FROM users WHERE username = '$username'");
 	$score = $result->fetch_assoc()["score"];
 	$score += 1;
 	$db->query("UPDATE users SET score = $score WHERE username = '$username'");
+}
+
+function postComment($content, $username, $phraseID)
+{
+	$db = dbConnect();
+	$result = $db->query("SELECT * FROM users WHERE username = '$username'");
+	
+	print($db->error);
+	if(!$result)
+	{
+		print("Error");
+	}
+	$userID = $result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	
+	$postcomment = $db->query("INSERT INTO comments(comment, userID, phraseID) VALUES('$content', $userID, $phraseID)");
+	
+	if($postcomment)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
+	
 }
 
 function getPhraseComments($phraseId, $from, $commentCount)
@@ -659,10 +668,54 @@ function getPhraseComments($phraseId, $from, $commentCount)
 	$from = $db->real_escape_string($from);
 	$commentCount = $db->real_escape_string($commentCount);
 	$result = $db->query("SELECT * FROM comments WHERE phraseId=$phraseId LIMIT $commentCount");
+	if(!$result)
+	{
+		print("Error");
+	}
 	$comments = $result->fetch_all(MYSQLI_ASSOC);
+	for($i = 0; $i < count($comments); $i++)
+	{
+		$userID = $comments[$i]["userID"];
+		$result = $db->query("SELECT username FROM users WHERE id = $userID");
+		if(!$result)
+		{
+			print("Error");
+		}
+		$username = $result->fetch_all(MYSQLI_ASSOC)[0]["username"];
+		$comments[$i]["username"] = $username;
+	}
 	return $comments;
 }
 
+function changeUserLanguage($language, $username)
+{
+	$db = dbConnect();
+	$language = $db->real_escape_string($language);
+	$username = $db->real_escape_string($username);
+
+	$result = $db->query("UPDATE users SET language = '$language' WHERE username = '$username'");
+	if(!$result)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+function getUserLanguage($username)
+{
+	$db = dbConnect();
+	$username = $db->real_escape_string($username);
+	$result = $db->query("SELECT language FROM users WHERE username = '$username'");
+	if(!$result)
+	{
+		print("Error");
+	}
+	$language = $result->fetch_all(MYSQLI_ASSOC)[0]["language"];
+	$language = $db->real_escape_string($language);
+	return $language;
+}
 /*
 $db = new mysqli("localhost", "root", "root", "words");
 $result = $db->query("SELECT * FROM players");
@@ -720,11 +773,17 @@ else if($command[0] == "check-phrase")
 	//print("2");
 	dbInit();
 } */
+else if($command[0] == "get-user-language")
+{
+	$result = getUserLanguage($command[1]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
 else if($command[0] == "get-level")
 {
 	$level = $command[1];
 	$sublevel = $command[2];
-	$result = getLevel($level, $sublevel);
+	$language = $command[3];
+	$result = getLevel($level, $sublevel, $language);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "register-user")
@@ -732,9 +791,19 @@ else if($command[0] == "register-user")
 	$result = registerUser($command[1], $command[2], $command[3]);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
+else if($command[0] == "get-user-info")
+{
+	
+}
 else if($command[0] == "get-user-level")
 {
+	
 	$result = getUserLevel($command[1]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "change-language")
+{
+	$result = changeUserLanguage($command[1], $command[2]);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "login")
@@ -752,6 +821,11 @@ else if($command[0] == "get-phrase-comments")
 {
 	$result = getPhraseComments($command[1], 0, 30);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "post-comment")
+{
+	$result = postComment($command[1], $command[2], $command[3]);
+	print(json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "add-phrase")
 {

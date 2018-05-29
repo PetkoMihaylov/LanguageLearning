@@ -71,17 +71,27 @@ function dbInit($password)
 					   sublevel INTEGER NOT NULL
 					   )
 					   ");
+					   //the score is for completed levels
+					   //the points are for right/wrong comparison -maybe, because je n'ai pas d'idée comment faire ça
 	if (!$users)
 	{
 		print($db->error);
 	}
+	$levelContent = $db->query("Create table levelContent(
+						text VARCHAR(512) NOT NULL,
+						level INTEGER NOT NULL
+						)
+						");
+	
 	$language = $db->query("Create table languageprogress(
-						  name VARCHAR(30) UNIQUE NOT NUL,
+						  name VARCHAR(30) NOT NUL,
 						  userID INTEGER NOT NULL,
 						  level INTEGER NOT NULL,
-						  sublevel INTEGER NOT NULL
+						  sublevel INTEGER NOT NULL,
+						  FOREIGN KEY(userId) REFERENCES users(id)
 						  )
 						  ");
+						  // the name of the language should not be unique--
 	//
    $phrases = $db->query("Create table phrases(
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -103,7 +113,8 @@ function dbInit($password)
 	                       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						   answer VARCHAR(256),
 						   phraseId INT NOT NULL,
-						   language VARCHAR(30) NOT NULL
+						   language VARCHAR(30) NOT NULL,
+						   FOREIGN KEY(phraseId) REFERENCES phrases(id)
 						   )
 						   ");
 	if (!$answers)
@@ -136,7 +147,8 @@ function dbInit($password)
 									id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 									word VARCHAR(256),
 									wordId INT NOT NULL,
-									from_language VARCHAR(30) NOT NULL
+									from_language VARCHAR(30) NOT NULL,
+									FOREIGN KEY(wordId) REFERENCES words(id)
 									)
 									");
 	
@@ -214,7 +226,8 @@ function dbInit($password)
 								id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 								answer VARCHAR(256),
 								phraseId INT NOT NULL,
-								language VARCHAR(30) NOT NULL
+								language VARCHAR(30) NOT NULL,
+								FOREIGN KEY(phraseId) REFERENCES checkbox_phrases(id)
 								)
 								");
 								
@@ -222,7 +235,8 @@ function dbInit($password)
 								id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 								answer VARCHAR(256),
 								phraseId INT NOT NULL,
-								language VARCHAR(30) NOT NULL
+								language VARCHAR(30) NOT NULL,
+								FOREIGN KEY(phraseId) REFERENCES checkbox_phrases(id)
 								)
 								");
 	
@@ -273,7 +287,7 @@ function dbInit($password)
 	$phrase_id = $db->insert_id;
 	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Заек', '$phrase_id', '$language')");
 	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Зайче', '$phrase_id', '$language')");
-	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('А girl is here.','1','1','$language')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('The girl is here.','1','1','$language')");
 	$phrase_id = $db->insert_id;
 	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Момичето е тук.', '$phrase_id', '$language')");
 	
@@ -286,11 +300,93 @@ function dbInit($password)
 	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('building','car','horse','1','1','$language')");
 	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1,level, sublevel, language) VALUES('tree','plant','rabbit','1','1','$language')");
 	
-	
+	#words
 	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('rabbit','1','1','$language')");
 	$word_id = $db->insert_id;
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('заек','$word_id','$language')");
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('зайче','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('blue','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('син','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('синьо','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('doll','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('кукла','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('horse','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('кон','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('wall','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('стена','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('building','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('сграда','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('постройка','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('tree','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('дърво','$word_id','$language')");
+	
+	
+	#french
+	#<<
+	$language = "fr";
+	
+	
+	$insert = $db-> query("INSERT INTO checkbox_phrases(phrase, level, sublevel, language) VALUES('Bleu', '1', '1', '$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO checkbox_answers(answer, phraseId, language) VALUES('Синьо', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_answers(answer, phraseId, language) VALUES('Син', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Червено', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Зелено', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Бяло', '$phrase_id'), '$language'");
+	
+	$insert = $db-> query("INSERT INTO checkbox_phrases(phrase, level, sublevel, language) VALUES('Le bâtiment', '1', '1', '$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO checkbox_answers(answer, phraseId, language) VALUES('Сградата', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Колата', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Влакът', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO checkbox_wrong_answers(answer, phraseId, language) VALUES('Картината', '$phrase_id', '$language')");
+	
+	
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('J''étais dehors aujourd''hui.','1','1','$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Бях навън днес.', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Аз бях навън днес.', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Навън бях днес.', '$phrase_id', '$language')");
+	
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('Lapin','1','1','$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Заек', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Зайче', '$phrase_id', '$language')");
+	$insert = $db-> query("INSERT INTO phrases(phrase, level, sublevel, language) VALUES('La fille est ici.','1','1','$language')");
+	$phrase_id = $db->insert_id;
+	$insert = $db-> query("INSERT INTO answers(answer, phraseId, language) VALUES('Момичето е тук.', '$phrase_id', '$language')");
+	
+	$insert = $db->query("INSERT INTO radio_phrases(phrase, correct_answer, wrong_answer0, wrong_answer1, wrong_answer2, wrong_answer3, level, sublevel, language) VALUES('I _ out today', 'was', 'had', 'were', 'blue', 'car', '1', '1', '$language')");
+	
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('lapin','bâtiment','cheval','1','1','$language')");
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('cheval','araignée','mur','1','1','$language')");
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('poupée','mur','voiture','1','1','$language')");
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('bleu','voiture','rouge','1','1','$language')");
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('bâtiment','voiture','cheval','1','1','$language')");
+	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1,level, sublevel, language) VALUES('arbre','plante','lapin','1','1','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('lapin','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('заек','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('зайче','$word_id','$language')");
+	
+	
+	#>>	
+	
+	
 	
 	$password = "vasko3";
 	$password_hash = hash("sha512", $password . DB_SALT);

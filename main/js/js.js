@@ -1,5 +1,56 @@
 ﻿"use strict";
-var language = "en"; //by default
+
+var state={};
+var globalLanguage = "en"; //by default 'en', but changed to the user specific one
+
+var usernameField = document.getElementById("username");
+var userLanguageField = document.getElementById("userLanguage");
+var userLevelField = document.getElementById("userLevel");
+var userConsecutiveDaysField = document.getElementById("userConsecutiveDays");
+
+	var div = document.querySelector('body>main');
+
+function getUserLanguage()
+{
+	sendCommand(["get-user-language", state.username], 
+				function (r){
+					console.log(r);
+					globalLanguage = r;
+					console.log(globalLanguage);
+					if(globalLanguage != "en" && globalLanguage != "fr")
+					{
+						globalLanguage = globalLanguage.replace(/['"]+/g, '');
+						globalLanguage = globalLanguage.replace(/\s/g,'');
+						globalLanguage = globalLanguage.toString();
+						console.log(globalLanguage);
+					}
+				}, false
+	);
+	if(globalLanguage == "en")
+	{
+		console.log("bravisimo");
+	}
+	state.languageName = getLanguageName(globalLanguage);
+	console.log(state.languageName);
+	return globalLanguage;
+}
+
+function getLanguageName(language)
+{
+	if(language == "en")
+	{
+		return "Английски";
+	}
+	else if(language == "fr")
+	{
+		return "Френски";
+	}
+	else
+	{
+		return false;
+	}
+}
+
 function playAudio(phrase)
 {
 	const msg = new SpeechSynthesisUtterance();
@@ -12,7 +63,7 @@ function playAudio(phrase)
 	function populateVoices() {
 		voices = this.getVoices();
 		voicesDropdown.innerHTML = voices
-			.filter(voice => voice.lang.includes('en'))
+			.filter(voice => voice.lang.includes(`${globalLanguage}`))
 			.map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
 			.join('');
 	}
@@ -67,17 +118,60 @@ function incrementScore()
 	sendCommand(["increment-score"]);
 }
 
-function switchLanguageEn()
+function switchLanguageEn(state)
 {
-	language = "en";
-	console.log(language);
+	globalLanguage = "en";
+	console.log(state.username);
 	document.getElementById("languageDropdown").className = "dropdown-content hidden";
+	sendCommand(["change-language", globalLanguage, state.username], 
+					function (r){
+						console.log(r);
+						if(r)
+						{
+							console.log("Language changed");
+						}
+						else
+						{
+							console.log("Not changed");
+						}
+					
+					});		
+	state.languageName = getLanguageName(globalLanguage);
+	var userLanguageField = document.getElementById("userLanguage");
+	userLanguageField.innerText = "Eзик: " + state.languageName;
+	setCookie("language", globalLanguage, 365);
+	var div = document.querySelector('body>main');
+	clearDiv(div);
+	showMainPage(div, state);
 }
+
 function switchLanguageFr()
 {
-	language = "fr";
-	console.log(language);
+	globalLanguage = "fr";
+	console.log(state.username);
+	console.log(globalLanguage);
 	document.getElementById("languageDropdown").className = "dropdown-content hidden";
+
+	sendCommand(["change-language", globalLanguage, state.username], 
+					function (r){
+						console.log(r);
+						if(r)
+						{
+							console.log("Language changed");
+						}
+						else
+						{
+							console.log("Not changed");
+						}
+					
+					});
+	state.languageName = getLanguageName(globalLanguage);
+	var userLanguageField = document.getElementById("userLanguage");
+	userLanguageField.innerText = "Eзик: " + state.languageName;
+	setCookie("language", globalLanguage, 365);
+	var div = document.querySelector('body>main');
+	clearDiv(div);
+	showMainPage(div, state);
 }
 
 function makeRadioExercise(div, state)
@@ -139,7 +233,7 @@ function makeListeningExercise(div, state)
 		var space = document.createElement("span");
 		space.innerText = ' ';
 		showPhrase.innerText = `${phraseWords[wordCount]}`;
-		//div.appendChild(showPhrase);
+		//div.appendChild(Phrase);
 		if(wordCount + 1 != phraseWords.length)
 		{
 			//div.appendChild(space);
@@ -163,13 +257,20 @@ function makeListeningExercise(div, state)
 	
 	var form = document.createElement("form");
 	var button = document.createElement("button");
-	button.disabled = true;
 	button.innerText= "Провери";
 	button.className = "btn btn-secondary";
 	button.type = "submit";
-	if(phraseInput)
+	button.disabled = true;
 	form.appendChild(button);
 	div.appendChild(form);
+	if(phraseInput.value != '')
+	{
+		button.disabled = true;
+	}
+	else
+	{
+		button.disabled = false;
+	}
 	form.onsubmit = function (event) {
 		event.preventDefault();
 		sendCommand(["check-phrase", phraseInput.value, phraseAnswers, phrase], 
@@ -228,12 +329,16 @@ function makePhraseExercise(div, state)
 		phraseAnswers.push(state.exercises.phrases[state.phraseCounter].answers[answerCount].answer);
 	}
 	console.log(phraseAnswers);
-	var phraseInput = document.createElement("input");
+	var phraseInput = document.createElement("textarea");
 	phraseInput.phrase = "";
 	div.appendChild(phraseInput);
 	
 	
 	var form = document.createElement("form");
+	var buttonContinue = document.createElement("button");
+	buttonContinue.innerText= "Провери";
+	buttonContinue.className = "btn btn-secondary";
+	buttonContinue.style.visibility = 'hidden';
 	var button = document.createElement("button");
 	button.innerText= "Провери";
 	button.className = "btn btn-secondary";
@@ -258,8 +363,10 @@ function makePhraseExercise(div, state)
 				}
 			}, false
 		);
+		buttonContinue.style.visibility = 'visible';
+		//buttonContinue.onclick = continue
 		console.log(state.exercises.phrases[state.phraseCounter].id);
-		//getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
+		getPhraseComments(state.exercises.phrases[state.phraseCounter].id, div, state);
 	}
 	state.phraseCounter++;
 }
@@ -341,6 +448,8 @@ function callback(state, response)
 }
 function showImages(div, state)
 {
+	state.myCounter = 0;
+	
 	var container = div;
 	var div = document.createElement("div");
 	div.className = "button-container";
@@ -399,6 +508,7 @@ function showImages(div, state)
 	shuffle(allWords);
 	var correctWord = allWords.indexOf(word); 
 	console.log(allWords[correctWord]);
+
 	for(var i = 0; i < 3; i++)
 	{
 		var li = document.createElement("li");
@@ -431,29 +541,37 @@ function showImages(div, state)
 		label.appendChild(inp);
 		label.appendChild(span);
 		
-		img.addEventListener (
+		label.addEventListener (
 			'click',
-			function(e)
+			function buttonContinuation(e)
 			{
-				//img.onclick = undefined;
-				//checked = true;
-				/*var p = document.createElement("p");
-				p.className = "photo-caption";
-				p.textContent = e.target._name;
-				//console.log(e.target.parentElement);
-				e.target.parentElement.appendChild(p); */
-				//console.log(e.target.src);
+				if(state.myCounter <= 1)
+				{
+					button.disabled = false;
+					state.myCounter++;
+					console.log(state.myCounter);
+				}
 			}
 		);
+		
 	}
+	
 	var button = document.createElement("button");
+	button.id = "checkButton";
 	button.className = "btn btn-secondary";
+	button.disabled = true;
+	
+	var buttonC = document.createElement("button");
+	buttonC.textContent="Пропусни";
+	buttonC.id = "continueButton";
+	buttonC.className = "btn btn-secondary";
+	buttonC.disabled = true;
+	
 	itemContainer.appendChild(div);
 	div.appendChild(button);
 	button.textContent = "Провери";
 	button.onclick = function() 
 	{
-		button.parentNode.removeChild(button);
 		if(inps[correctWord].checked)
 		{
 			//incrementScore();
@@ -465,37 +583,39 @@ function showImages(div, state)
 			state.wrongExercises.push({"index" : imageIndex, "exercise" : showImages});
 			console.log(state);
 		}
+		
+		//label.removeEventListener('click', buttonContinuation());
+		button.disabled = true;
+		buttonC.disabled = false;
 	}
-	var buttonC = document.createElement("button");
-	buttonC.textContent="Пропусни";
-	buttonC.className = "btn btn-secondary";
 	div.appendChild(buttonC);
 	if(!state.doWrongExercise)
 	{
 		state.counter--;
 	}
 	//console.log(state.counter);
-	buttonC.onclick = function()
+	buttonC.onclick = function ()
 	{
 		if(state.counter == 0 && !state.doWrongExercise)
 		{
 			console.log("continuing");
+			buttonC.disabled = false;
 			clearDiv(container);
 			startExercises(container, state);
 		}
 		else if(!state.doWrongExercise)
 		{
+			buttonC.disabled = false;
 			clearDiv(container);
 			showImages(container, state);
 		}
 		else if(state.wrongExercises.length > 0)
 		{
+			buttonC.disabled = false;
 			clearDiv(container);
 			startWrongExercises(container, state);
 		}
 	}
-	
-	
 }
 
 function makeCheckboxes(phraseIndex, div, state)
@@ -515,16 +635,28 @@ function makeCheckboxes(phraseIndex, div, state)
 	textPhrase.style = "text-decoration: underline;"
 	console.log(mixed_answers);
 	var p = document.createElement("p");
-	var t = document.createTextNode("What is the translation of ");
+	var t = document.createTextNode("Какви са възможните преводи на думата - ");
 	//var questionMark = 
 	//p.innerHTML = phraseName;
 	p.appendChild(t);
 	p.appendChild(textPhrase);
-	
 	//t.innerText = phraseName;
 	//print(phraseName);
-	var q = document.createTextNode("?");
+	var q = document.createTextNode(" ? ");
 	p.appendChild(q);
+	var span = document.createElement("span");
+	var mark = document.createElement("text");
+	mark.innerText = "Отбележете ";
+	var all = document.createElement("text");
+	all.innerText = "ВСИЧКИ";
+	all.style = "text-decoration: underline; font-style: italic;";
+	var possibleAnswers = document.createElement("text");
+	possibleAnswers.innerText = " възможни преводи!";
+	span.appendChild(mark);
+	span.appendChild(all);
+	span.appendChild(possibleAnswers);
+	p.appendChild(span);
+	
 	var form = document.createElement("form");
 	div.appendChild(p);
 	
@@ -559,6 +691,13 @@ function makeCheckboxes(phraseIndex, div, state)
 		//label.appendChild(document.createTextNode(mixed_answers[i].answer));
 		checkboxes.push(checkbox);		
 	}
+	var buttonC = document.createElement("button");
+	
+	buttonC.disabled = true;
+	buttonC.innerText = "Пропусни";
+	buttonC.className = "btn btn-secondary";
+	
+	
 	var button = document.createElement("button");
 	
 	//button.id = "";
@@ -567,6 +706,7 @@ function makeCheckboxes(phraseIndex, div, state)
 	button.innerText = "Провери";
 	button.className = "btn btn-secondary";
 	form.appendChild(button);
+	
 	form.onsubmit = function (event) {
 		event.preventDefault();
 		var correct = true;
@@ -603,12 +743,36 @@ function makeCheckboxes(phraseIndex, div, state)
 			}
 			
 			//console.log(checkboxes[i].checked);
+			button.disabled = true;
+			buttonC.disabled = false;
 		}
+		
 		console.log("jere");
 		if(!correct)
 		{	
 			state.wrongExercises.push({"index" : phraseIndex, "exercise" : checkboxesFour});
 			console.log(state);
+		}
+		buttonC.onclick = function() {
+			if(state.counter == 0 && !state.doWrongExercise)
+			{
+				console.log("continuing");
+				buttonC.disabled = false;
+				clearDiv(container);
+				startExercises(container, state);
+			}
+			else if(!state.doWrongExercise)
+			{
+				buttonC.disabled = false;
+				clearDiv(container);
+				showImages(container, state);
+			}
+			else if(state.wrongExercises.length > 0)
+			{
+				buttonC.disabled = false;
+				clearDiv(container);
+				startWrongExercises(container, state);
+			}
 		}
 	}
 }
@@ -633,7 +797,7 @@ function shuffle(array)
 function addPhrasesMode(div)
 {
 	var form = document.createElement("form");
-	var phraseInput = document.createElement("input");
+	var phraseInput = document.createElement("textarea");
 	phraseInput.id = "phraseInput";
 	var answerInputs = [document.createElement("input")];
 	var button = document.createElement("button");
@@ -662,7 +826,7 @@ function addPhrasesMode(div)
 	subLevelInput.required = true;
 	
 	function addAnswerInput(event){
-		var newAnswerInput = document.createElement("input");
+		var newAnswerInput = document.createElement("textarea");
 		form.appendChild(newAnswerInput);
 		event.target.oninput = undefined;
 		newAnswerInput.oninput = addAnswerInput;
@@ -705,6 +869,12 @@ function checkboxesFour(div, state)
 	makeCheckboxes(phraseIndex, div, state);
 }
 
+function validateEmail(email) {
+	var re = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+
+	return re.test(email.value);
+}
+
 function registrationForm(div, state)
 {
 	
@@ -735,34 +905,112 @@ function registrationForm(div, state)
 	registerForm.appendChild(button);
 	username.required = true;
 	password.required = true;
+	var correctEmail;
 	registerForm.onsubmit = function (event) {
 		event.preventDefault();
-		sendCommand([
-			"register-user",
-			username.value,
-			email.value,
-			password.value
-			],
-			function(response) {console.log(response);}, false);
+		correctEmail = validateEmail(email);
+		console.log(correctEmail);
+		if(!correctEmail)// && email !== document.activeElement && 
+		{
+			alert("You have not provided a correct email address!");
+		}
+		else
+		{
+			sendCommand([
+				"register-user",
+				username.value,
+				email.value,
+				password.value
+				],
+				function(response) {
+					console.log(response);
+					if(response == true)
+					{
+						alert("Registration was a success!");
+						clearDiv(div);
+						showLogin(div, state);
+					}
+					else
+					{
+						alert("Registration failed, try again!");
+						alert("Perhaps try a different username?");
+					}
+				
+				}, false);
+		}
+			
 	};
 }
 
 function getPhraseComments(phraseId, div, state)
 {
+	var blackfield = document.createElement("div");
+	document.body.appendChild(blackfield);
+	blackfield.style = "position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); top: 0; left: 0;";
+	blackfield.onclick = function(e){
+		if(e.target == blackfield)
+		{
+			document.body.removeChild(blackfield);
+		}
+	}
+	var commentsDiv = document.createElement("div");
+	blackfield.appendChild(commentsDiv);
+	commentsDiv.className = "commentsDiv";
+	var form = document.createElement("form");
+	commentsDiv.appendChild(form);
+	var commentField = document.createElement("textarea");
+	form.appendChild(commentField);
+	var button = document.createElement("button");
+	button.type = "submit";
+	commentField.style = "width: 80%; height: 10em; margin: 0 auto; resize: vertical";
+	
+	form.appendChild(button);
+	console.log(state.username);
+	button.innerText = "сдс";
+	form.onsubmit = function(){
+		sendCommand(
+		["post-comment", commentField.value, state.username, phraseId],
+		function(r){
+			console.log(r);
+			
+		}, false
+		
+		);
+	}
+	
 	
 	sendCommand(
 		["get-phrase-comments", phraseId],
 		function (comments){
+			
+			console.log(phraseId);
 			console.log(comments);
 			for(var i = 0; i < comments.length; i++)
 			{
+				var commentContent = document.createElement("div");
+				commentContent.className = "commentContent";
+				commentsDiv.appendChild(commentContent);
+				var userP = document.createElement("p");
+				userP.innerText = comments[i].username + ":";
+				commentContent.appendChild(userP);
 				var p = document.createElement("p");
-				div.appendChild(p);
+				commentContent.appendChild(p);
 				p.innerText = comments[i].comment;
 			}
 			console.log(comments);
 		}
 	);
+	
+	
+}
+
+function showHome()
+{
+	main();
+}
+
+function showWords()
+{
 	
 }
 
@@ -793,7 +1041,8 @@ function startExercises(div, state)
 		];
 		shuffle(exercises);
 		var otherDiv = document.createElement("div");
-		document.body.appendChild(otherDiv);
+		/*var mainElement = document.getElementById("main");
+		mainElement.appendChild(otherDiv);*/ //to work without the "пропусни" button
 		var button = document.createElement("button");
 		otherDiv.appendChild(button);
 		button.innerText = "Пропусни";
@@ -865,8 +1114,12 @@ function showLevel(div, state, level)
 		a.onclick = function (event){
 			event.preventDefault();
 			clearDiv(div);
+			console.log(globalLanguage);
+			globalLanguage = globalLanguage.replace(/(\r\n|\n|\r)/gm, "");
+			globalLanguage = globalLanguage.replace(/["']/g, "");
+			
 			sendCommand(
-				["get-level", `${level}`, `${this.sublevel}`],
+				["get-level", `${level}`, `${this.sublevel}`, globalLanguage],
 				function (r){
 					console.log(r);
 					state.exercises = r;
@@ -960,14 +1213,26 @@ function getCookie(cname) {
 }
 
 function languageChoice() {
-    document.getElementById("languageDropdown").className = "dropdown-content show";
+	
+	if(document.getElementById("languageDropdown").className == "dropdown-content hidden")
+	{
+		document.getElementById("languageDropdown").className = "dropdown-content show";
+	}
+	else if(document.getElementById("languageDropdown").className == "dropdown-content show")
+	{
+		document.getElementById("languageDropdown").className = "dropdown-content hidden";
+	}
+	else
+	{
+		document.getElementById("languageDropdown").className = "dropdown-content show";
+	}
 }
 
 function filterFunction() {
     var input, filter, ul, li, a, i;
     input = document.getElementById("myInput");
     filter = input.value.toUpperCase();
-    div = document.getElementById("myDropdown");
+    var div = document.getElementById("languageDropdown");
     a = div.getElementsByTagName("a");
     for (i = 0; i < a.length; i++) {
         if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
@@ -981,6 +1246,16 @@ function filterFunction() {
 function clearDiv(div)
 {
 	div.innerHTML = "";
+}
+
+function getUserInfo() //level, sublevel, consecutive days and last day played
+{
+	sendCommand(["get-user-info", state.username, globalLanguage],
+				function (r){
+					
+				}
+				
+				);
 }
 
 function showLogin(div, state)
@@ -1021,10 +1296,14 @@ function showLogin(div, state)
 			function(r){
 				if(r)
 				{
-					var p = document.getElementById("username");
-					p.innerText = username.value;
 					state.username = username.value;
+					globalLanguage = getUserLanguage();
+					var usernameField = document.getElementById("username");
+					usernameField.innerText = username.value;
+					var userLanguageField = document.getElementById("userLanguage");
+					userLanguageField.innerText = "Eзик: " + state.languageName;
 					console.log(state.username);
+					document.getElementById("languageChoice").disabled = false;
 					setCookie("username", username.value, 365);
 					setCookie("password", password.value, 365);
 					clearDiv(div);
@@ -1036,8 +1315,11 @@ function showLogin(div, state)
 						{
 							setCookie("username", "", 0);
 							setCookie("password", "", 0);
-							p.innerText = "";
+							usernameField.innerText = "";
+							userLanguageField = "";
 							clearDiv(div);
+							document.getElementById("languageChoice").disabled = true;
+							document.getElementById("languageDropdown").className = "dropdown-content hidden";
 							button.innerText = "Влез";
 							showLogin(div, state);
 						}
@@ -1070,17 +1352,29 @@ function showLogin(div, state)
 	
 } */
 
+
+
+
 function main()
 {	
-	var state={};
 	
 	var div = document.querySelector('body>main');
+	clearDiv(div);
 	div.className = "blocky";
 	div.class = "blocky";
 	var button = document.getElementById("log");
 	button.innerText = "Влез";
 	var username = getCookie("username");
 	var password = getCookie("password");
+	var language = getCookie("language");
+	if(language)
+	{
+		globalLanguage = language;
+	}
+	else
+	{
+		setCookie("language", globalLanguage, 365);
+	}
 	if(username && password)
 	{
 		sendCommand([
@@ -1099,22 +1393,39 @@ function main()
 						{
 							setCookie("username", "", 0);
 							setCookie("password", "", 0);
-							var p = document.getElementById("username");
-							p.innerText = "";
+							var usernameField = document.getElementById("username");
+							usernameField.innerText = "";
+							var userLanguageField = document.getElementById("userLanguage");
+							userLanguageField.innerText = "";
+							document.getElementById("languageChoice").disabled = true;
+							/* var userLanguageField = document.getElementById("userLanguage");
+							userLanguageField = ""; */
 							clearDiv(div);
 							button.innerText = "Влез";
 							showLogin(div, state);
 						}
 					);
 					
-					var p = document.getElementById("username");
-					p.innerText = `${username}`;
+					state.username = username;
+					globalLanguage = getUserLanguage();
+					var usernameField = document.getElementById("username");
+					usernameField.innerText = username + "\n"; //state.languageName;
+					var userLanguageField = document.getElementById("userLanguage");
+					var userLevelField = document.getElementById("userLevel");
+					var userConsecutiveDaysField = document.getElementById("userConsecutiveDays");
+					userLanguageField.innerText = "Eзик: " + state.languageName;
+					document.getElementById("languageChoice").disabled = false;
+					//userLevelField = "Ниво: " + state + ", Раздел: " + state;//тук
+					console.log(globalLanguage);
+					console.log(state.username);
+					console.log(state);
 					showMainPage(div, state);
 					
 				}
 				else
 				{
 					console.log(r);
+					state.username = username;
 					showLogin(div, state);
 				}
 			}
