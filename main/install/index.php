@@ -374,6 +374,26 @@ function dbInit($password)
 	$word_id = $db->insert_id;
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('е','$word_id','$language')");
 	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('she is','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тя е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('she is','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тя е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('he is','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('той е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('it is','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('то е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('here','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тук','$word_id','$language')");
+	
 	#french
 	#<<
 	$language = "fr";
@@ -434,14 +454,14 @@ function dbInit($password)
 	$password_hash = hash("sha512", $password . DB_SALT);
 	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('Vasko2', 'vasko@mail.com', '$password_hash', 'en', 0, 0, 0, 1, 3);");
 	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 1, 0, 1, 3)");
-	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 1, 0, 1, 5)");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 1, 0, 1, 3)");
 	
 	$password = "adminadmin";
 	$password_hash = hash("sha512", $password . DB_SALT);
 	
 	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('admin', 'admin@mail.com', '$password_hash', 'en', 0, 0, 0, 5, 5);");
 	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 2, 0, 5, 5)");
-	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 2, 0, 5, 2)");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 2, 0, 5, 5)");
 	
 	/* $db->query("INSERT INTO comments () VALUES ('Vasko2', 'vasko@mail.com',	'$password_hash', 'en', 0, 0, 0, 1, 1);"); */
 	

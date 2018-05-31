@@ -153,9 +153,21 @@ function incrementScore()
 {
 	sendCommand(["increment-score"]);
 }
-
+function clearButtonFinish()
+{
+	var otherDiv = document.getElementById("otherDiv");
+	if (typeof(otherDiv) != 'undefined' && otherDiv != null)
+	{
+		document.body.removeChild(otherDiv);
+	}
+	else
+	{
+		
+	}
+}
 function switchLanguageEn()//state
 {
+	clearButtonFinish();
 	globalLanguage = "en";
 	console.log(state.username);
 	document.getElementById("languageDropdown").className = "dropdown-content hidden";
@@ -189,6 +201,7 @@ function switchLanguageEn()//state
 
 function switchLanguageFr()
 {
+	clearButtonFinish();
 	globalLanguage = "fr";
 	console.log(state.username);
 	console.log(globalLanguage);
@@ -1286,6 +1299,7 @@ function showHome()
 
 function showWords()
 {
+	clearButtonFinish();
 	sendCommand(
 		["get-words-user", state.username, globalLanguage, state.userInfo.level, state.userInfo.sublevel],
 		function (r)
@@ -1298,11 +1312,13 @@ function showWords()
 			for(var i = 0; state.words.length > i; i++)
 			{
 				var p = document.createElement("p");
+				p.className = "wordContent";
 				div.appendChild(p);
 				div.style = "position: relative";
 				
 				console.log(i);
 				var spanContainer = document.createElement("span");
+				spanContainer.className = "spanContainer";
 				var textWord = document.createElement("text");
 				var levelsContainer = document.createElement("text");
 				levelsContainer.id = "levelsContainer";
@@ -1365,6 +1381,7 @@ function startExercises(div)
 		mainElement.appendChild(otherDiv);*/ //to work without the "пропусни" button
 		var button = document.createElement("button");
 		otherDiv.appendChild(button);
+		otherDiv.id = "otherDiv";
 		otherDiv.style="align-items: center; justify-content: center;"
 		document.body.appendChild(otherDiv);
 		button.innerText = "Продължи";
@@ -1401,6 +1418,12 @@ function startExercises(div)
 					state.button.disabled = false;
 					button.innerText = "Finish";
 					button.style="bottom: 30%, right: 10%";
+					sendCommand(["update-user-score", state.username, 10, globalLanguage],
+						function(r)
+						{
+							console.log(r);
+						},false
+					);
 					button.addEventListener (
 						'click',
 						function(e)
@@ -1617,6 +1640,16 @@ function clearDiv(div)
 	div.innerHTML = "";
 }
 
+/* function dateDaysPlayed()
+{
+	var initialDate = new Date(2018, 4, 29); // Attention: month is zero-based
+	var now = Date.now();
+	var difference = now - initialDate;
+	var millisecondsPerDay = 24 * 60 * 60 * 1000;
+	var daysSince = Math.floor(difference / millisecondsPerDay);
+	alert(daysSince); //
+} */
+
 function getUserInfo(callback) //level, sublevel, consecutive days and last day played
 {
 	sendCommand(["get-user-info", state.username],
@@ -1625,7 +1658,9 @@ function getUserInfo(callback) //level, sublevel, consecutive days and last day 
 					state.userInfo = r;
 					console.log(state);
 					var userLevelField = document.getElementById("userLevel");
-					userLevelField.innerText = "Level: " + state.userInfo.level + "\n" + "SubLevel: " + state.userInfo.sublevel;
+					userLevelField.innerText = "Ниво: " + state.userInfo.level + "\n" + "Подниво: " + state.userInfo.sublevel;
+					var userDaysField = document.getElementById("userDays"); 
+					userDaysField.innerText = "Играни поред: " + state.userInfo.days_played + "\n" + " Резултат: " + state.userInfo.score + "\n" + " Точки: " + state.userInfo.points;
 					callback();
 				}
 				);
@@ -1634,6 +1669,8 @@ function clearFields()
 {
 	var userLevelField = document.getElementById("userLevel");
 	userLevelField.innerText = "";
+	var userDaysField = document.getElementById("userDays"); 
+	userDaysField.innerText = "";
 }
 
 function showLogin(div)
@@ -1708,6 +1745,7 @@ function showLogin(div)
 					clearDiv(div);
 					var button = document.getElementById("log");
 					button.innerText = "Излез";
+					//dateDaysPlayed();
 					button.addEventListener (
 						'click',
 						function(e)
@@ -1808,6 +1846,7 @@ function main()
 						}
 					);
 					
+					dateDaysPlayed();
 					state.username = username;
 					console.log(state.username);
 					console.log(globalLanguage);

@@ -786,6 +786,42 @@ function getUserLanguage($username)
 	
 	return $language;
 }
+
+function updateUserScore($username, $score_to_update, $language)
+{
+	$db = dbConnect();
+	$language = $db->real_escape_string($language);
+	$username = $db->real_escape_string($username);
+	$score_to_update = $db->real_escape_string($score_to_update);
+	$userID_result = $db->query("SELECT id FROM users WHERE username = '$username'");
+	$userID = $userID_result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	
+
+	$score_result = $db->query("SELECT score FROM users WHERE username = '$username'");
+	if(!$score_result)
+	{
+		print("Error");
+		return false;
+	}
+	$userScore = $score_result->fetch_all(MYSQLI_ASSOC)[0]["score"];
+	
+	$userScore += $score_to_update;
+	$result = $db->query("UPDATE users SET score = '$userScore' WHERE username = '$username'");
+	if(!$result)
+	{
+		print("Error");
+		return false;
+	}
+	
+	$result = $db->query("UPDATE language SET score ='$userScore' WHERE userID = '$userID' and name = '$language'");
+	if(!$result)
+	{
+		print("Error");
+		return false;
+	}
+	return $userScore;
+	
+}
 /*
 $db = new mysqli("localhost", "root", "root", "words");
 $result = $db->query("SELECT * FROM players");
@@ -843,6 +879,14 @@ else if($command[0] == "check-phrase")
 else if($command[0] == "get-user-language")
 {
 	$result = getUserLanguage($command[1]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "update-user-score")
+{
+	$username = $command[1];
+	$score_to_update = $command[2];
+	$language = $command[3];
+	$result = updateUserScore($username, $score_to_update, $language);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "get-level")
