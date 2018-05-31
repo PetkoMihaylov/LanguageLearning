@@ -753,7 +753,7 @@ function changeUserLanguage($language, $username)
 function getWordsUser($username, $language, $level, $sublevel)
 {
 	$db = dbConnect();
-	//$username = $db->real_escape_string($username);
+	$username = $db->real_escape_string($username);
 	$language = $db->real_escape_string($language);
 	$level = $db->real_escape_string($level);
 	$sublevel = $db->real_escape_string($sublevel);
@@ -822,6 +822,54 @@ function updateUserScore($username, $score_to_update, $language)
 	return $userScore;
 	
 }
+function getUserProgress($username, $language)
+{
+	$db = dbConnect();
+	$username = $db->real_escape_string($username);
+	$language = $db->real_escape_string($language);
+	
+	$userID_result = $db->query("SELECT id FROM users WHERE username = '$username'");
+	$userID = $userID_result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	
+	$language_result = $db->query("SELECT * FROM language WHERE userID = '$userID'");
+	$language = $language_result->fetch_all(MYSQLI_ASSOC);
+	return $language;
+}
+
+function updateDateUser($username, $days_played_to_add)
+{
+	$db = dbConnect();
+	$username = $db->real_escape_string($username);
+	$days_played_to_add = $db->real_escape_string($days_played_to_add);
+	if($days_played_to_add == 1)
+	{
+		$days_played_result = $db->query("SELECT days_played FROM users WHERE username = '$username'");
+		if(!$days_played_result)
+		{
+			print("Error");
+			return false;
+		}
+		$days_played = $days_played_result->fetch_all(MYSQLI_ASSOC)[0]["days_played"];
+		$days_played += $days_played_to_add;
+		$result = $db->query("UPDATE users SET days_played = '$days_played' WHERE username='$username'");
+		if(!$result)
+		{
+			print("Error");
+			return false;
+		}
+		return true;
+	}
+	else if($days_played_result == 0)
+	{
+		$result = $db->query("UPDATE users SET days_played = 0 WHERE username = '$username'");
+		if(!$result)
+		{
+			print("Error");
+			return false;
+		}
+		return true;
+	}
+}
 /*
 $db = new mysqli("localhost", "root", "root", "words");
 $result = $db->query("SELECT * FROM players");
@@ -876,9 +924,23 @@ else if($command[0] == "check-phrase")
 	//print("2");
 	dbInit();
 } */
+else if($command[0] == "get-user-progress")
+{
+	$username = $command[1];
+	$language = $command[2];
+	$result = getUserProgress($username, $language);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
 else if($command[0] == "get-user-language")
 {
 	$result = getUserLanguage($command[1]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "update-date-user")
+{
+	$username = $command[1];
+	$days_played_to_add = $command[2];
+	$result = updateDateUser($username, $days_played_to_add);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "update-user-score")

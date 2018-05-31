@@ -7,7 +7,7 @@ var usernameField = document.getElementById("username");
 var userLanguageField = document.getElementById("userLanguage");
 var userLevelField = document.getElementById("userLevel");
 var userConsecutiveDaysField = document.getElementById("userConsecutiveDays");
-
+state.playedToday;
 	var div = document.querySelector('body>main');
 
 /*  var calculate = function() {
@@ -149,10 +149,10 @@ function sendCommand(command, callback, json=true)
 	request.send(JSON.stringify(command));
 }
 
-function incrementScore()
+/* function incrementScore()
 {
 	sendCommand(["increment-score"]);
-}
+} */
 function clearButtonFinish()
 {
 	var otherDiv = document.getElementById("otherDiv");
@@ -1294,7 +1294,53 @@ function getPhraseComments(phraseId, div)
 
 function showHome()
 {
+	clearButtonFinish();
 	main();
+}
+function showProgress()
+{
+	clearButtonFinish();
+	sendCommand(
+		["get-user-progress", state.username, globalLanguage],
+		function(r)
+		{
+			console.log(r);
+			state.progress = r;
+			console.log(state.progress);
+			var div = document.querySelector('body>main');
+			clearDiv(div);
+			for(var i = 0; state.progress.length > i; i++)
+			{
+				var languageName = getLanguageName(state.progress[i].name);
+				console.log(languageName);
+				var newLine = document.createElement("text");
+				newLine.innerText = '\n';
+				
+				var p = document.createElement("p");
+				p.className = "progressInfoContainer";
+				div.appendChild(p);
+				
+				
+				var languageNameText = document.createElement("text");
+				var languageLevelText = document.createElement("text");
+				var languageSublevelText = document.createElement("text");
+				var languageScoreText = document.createElement("text");
+				//var imageContainer
+				
+				languageNameText.innerText = "Език: " + languageName + "\n";
+				languageLevelText.innerText = "Ниво: " + state.progress[i].level + "\n";
+				languageSublevelText.innerText = "Подниво: " + state.progress[i].level +"\n";
+				languageScoreText.innerText = "Резултат към този език: " + state.progress[i].score;
+				
+				p.appendChild(languageNameText);
+				//p.appendChild(newLine);
+				p.appendChild(languageLevelText);
+				p.appendChild(languageSublevelText);
+				p.appendChild(languageScoreText);
+				
+			}
+		}
+	);
 }
 
 function showWords()
@@ -1418,16 +1464,23 @@ function startExercises(div)
 					state.button.disabled = false;
 					button.innerText = "Finish";
 					button.style="bottom: 30%, right: 10%";
-					sendCommand(["update-user-score", state.username, 10, globalLanguage],
-						function(r)
-						{
-							console.log(r);
-						},false
-					);
 					button.addEventListener (
 						'click',
 						function(e)
 						{
+							sendCommand(["update-user-score", state.username, 10, globalLanguage],
+								function(r)
+								{
+									console.log(r);
+									state.score = score;
+								},false
+							);
+							var cookieExists = getCookie("playedToday");
+							if(!cookieExists)
+							{
+								createCookiePlayed("playedToday", 1 );
+								state.playedToday = true;
+							}
 							clearDiv(div);
 							var level = state.level;
 							console.log(level);
@@ -1640,15 +1693,98 @@ function clearDiv(div)
 	div.innerHTML = "";
 }
 
-/* function dateDaysPlayed()
+/* function hasOneDayPassed(){
+	var date = new Date().toLocaleDateString();
+
+	if( localStorage.yourapp_date == date ) 
+	{
+		return false;
+	}
+	
+	localStorage.yourapp_date = date;
+	return true;
+} */
+
+function resetAtMidnight() {
+    var now = new Date();
+    var night = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1, // the next day, ...
+        0, 0, 0 // ...at 00:00:00 hours
+    );
+    var msToMidnight = night.getTime() - now.getTime();
+
+    setTimeout(function() {
+		var cookieExists = getCookie("playedToday");
+		var username = getCookie("username");
+		if(cookieExists)
+		{
+			var daysPlayed = 1;
+			sendCommand(["update-date-user", username, daysPlayed],
+				function(r){
+					console.log(r);
+					//state.lostStreak = false;
+				}, false
+			);
+			getUserInfo();
+		}
+		else
+		{
+			var daysPlayed = 0;
+			sendCommand(["update-date-user", username, daysPlayed],
+				function(r){
+					console.log(r);
+					//state.lostStreak = true;
+				}, false
+			);
+			getUserInfo();
+		}
+        reset();              //      <-- This is the function being called at midnight.
+        resetAtMidnight();    //      Then, reset again next midnight.
+    }, msToMidnight);
+}
+
+
+function createCookiePlayed(name, value, path) {
+	var expires = "";
+	var date = new Date();
+	var midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+	expires = "; expires=" + midnight.toGMTString();
+	if (!path) {
+		path = "/";
+	}
+	document.cookie = name + "=" + value + expires + "; path=" + path;
+	console.log(getCookie("playedToday"));
+}
+
+function dateDaysPlayed()
 {
-	var initialDate = new Date(2018, 4, 29); // Attention: month is zero-based
+	/* var start = moment().startOf('day');
+	var time = moment();
+	var end = moment().endOf('day'); */
+/* 	var initialDate = new Date(2018, 4, 29); // Attention: month is zero-based
 	var now = Date.now();
 	var difference = now - initialDate;
+	var daysPlayed = 0;
+	
+	if(state.todayPlayed != true)
+	{
+		send("")
+	}
+	else if(state.todayPlayed == true)
+	(
+		daysPlayed = 1;
+		sendCommand(["update-date-user", state.username, daysPlayed],
+			function(r){
+				console.log(r);
+			}, false
+		);
+	)
 	var millisecondsPerDay = 24 * 60 * 60 * 1000;
-	var daysSince = Math.floor(difference / millisecondsPerDay);
-	alert(daysSince); //
-} */
+	var daysSince = Math.floor(difference / millisecondsPerDay
+	alert(daysSince); // */
+}
 
 function getUserInfo(callback) //level, sublevel, consecutive days and last day played
 {
@@ -1805,6 +1941,7 @@ function main()
 	var username = getCookie("username");
 	var password = getCookie("password");
 	var language = getCookie("language");
+	console.log(language);
 	if(language)
 	{
 		globalLanguage = language;

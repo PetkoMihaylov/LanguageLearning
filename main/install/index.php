@@ -374,9 +374,6 @@ function dbInit($password)
 	$word_id = $db->insert_id;
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('е','$word_id','$language')");
 	
-	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('she is','1','1','$language')");
-	$word_id = $db->insert_id;
-	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тя е','$word_id','$language')");
 	
 	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('she is','1','1','$language')");
 	$word_id = $db->insert_id;
