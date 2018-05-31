@@ -59,11 +59,20 @@ function getLevel($level, $sublevel, $language)
 		$result = $db->query("SELECT * FROM checkbox_wrong_answers WHERE phraseId=$checkbox_phrase_id");
 		$checkbox_phrases[$i]['wrong_answers'] = $result->fetch_all(MYSQLI_ASSOC);
 	}
-	$word_result = $db -> query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 
 	$radio_result = $db -> query("SELECT * FROM radio_phrases WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
 	$radio_phrases = $radio_result->fetch_all(MYSQLI_ASSOC);
 	
+	$words_result = $db -> query("SELECT * FROM words WHERE level='$level' and sublevel='$sublevel' and language = '$language'");
+	$words = $words_result->fetch_all(MYSQLI_ASSOC);
+	//$words_translations_result = $db->query
+	for($i = 0; $i < count($words); $i++)
+	{	
+		$word = $words[$i]['word'];
+		$wordID = $words[$i]['id'];
+		$words_translations_result = $db->query("SELECT word FROM words_translations WHERE  from_language = '$language' and wordID = '$wordID'");
+		$words[$i]['translation'] = $words_translations_result->fetch_all(MYSQLI_ASSOC);
+	}
 
 	$exercises = [
 		"images" => $images,
@@ -71,6 +80,7 @@ function getLevel($level, $sublevel, $language)
 		"phrases" => $phrases,
 		"radio" => $radio_phrases,
 		"checkbox_phrases" => $checkbox_phrases,
+		"words" => $words
 	];
 	
 	return $exercises;

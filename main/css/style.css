@@ -348,7 +348,12 @@ body>div
 	/*display: flex;*/
 }
 
-
+#imageContainer
+{
+	 text-align: center;
+    font-size: x-large;
+    font-style: oblique;
+}
 
 
 

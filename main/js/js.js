@@ -643,23 +643,14 @@ function callback(response)
 function showImages(div)
 {
 	state.myCounter = 0;
-	
+
 	var container = div;
 	var div = document.createElement("div");
 	div.className = "button-container";
 	var itemContainer = document.createElement("div");
 	var p = document.createElement("p");
+	p.id = "imageContainer";
 	itemContainer.appendChild(p);
-	var ul = document.createElement("ul");
-	itemContainer.appendChild(ul);
-	container.appendChild(itemContainer);
-	itemContainer.id = "itemContainer";
-	//document.body.appendChild(container);
-	console.log(state.exercises.images[0].word);
-	console.log(state.exercises.images[0].incorrect_word0);
-	console.log(state.exercises.images[0].incorrect_word1);
-	
-	
 	
 	var unlock = 0;
 	var words = [];
@@ -686,6 +677,48 @@ function showImages(div)
 
 	console.log(imageIndex);
 	var word = state.exercises.images[imageIndex].word;
+	var translation;
+	console.log(state.exercises.words);
+	for(var j = 0; j < state.exercises.words.length; j++)
+	{
+		if(state.exercises.words[j].word == word)
+		{
+			console.log("vlezeee");
+			translation = state.exercises.words[j].translation[0].word;
+			console.log(translation);
+		}
+		else
+		{
+			console.log("da ama ne");
+		}
+	}
+	
+	var spanContainer = document.createElement("span");
+	spanContainer.style = "display: inline; text-align: center";
+	var translationQueestion = document.createElement("text");
+	translationQueestion.innerText = "Изберете изображението за думата - "
+	var translationWord = document.createElement("text");
+	translationWord.innerText = "'" + translation + "'" + " .";
+	spanContainer.appendChild(translationQueestion);
+	spanContainer.appendChild(translationWord);
+	p.appendChild(spanContainer);
+	
+	
+	var ul = document.createElement("ul");
+	itemContainer.appendChild(ul);
+	container.appendChild(itemContainer);
+	itemContainer.id = "itemContainer";
+	//document.body.appendChild(container);
+	console.log(state.exercises.images[0].word);
+	console.log(state.exercises.images[0].incorrect_word0);
+	console.log(state.exercises.images[0].incorrect_word1);
+	
+	
+	
+	
+	
+	
+	
 	words.push(word);
 	var incorrectWordOne = state.exercises.images[imageIndex].incorrect_word0;
 	var incorrectWordTwo = state.exercises.images[imageIndex].incorrect_word1;
@@ -693,7 +726,7 @@ function showImages(div)
 	allWords = emptyJoin.concat(words, incorrectWords);
 	
 	
-	p.innerText = word;
+	//p.innerText = translation;
 	//}
 	//console.log(words);
 	//console.log(incorrectWords);
