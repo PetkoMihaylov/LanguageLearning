@@ -343,6 +343,11 @@ div>span#span1
     left:25%; */
 }
 
+#levelsContainer
+{
+	float: right;
+}
+
 body>div
 {
 	/*display: flex;*/

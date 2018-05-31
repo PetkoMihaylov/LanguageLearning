@@ -338,6 +338,41 @@ function dbInit($password)
 	$word_id = $db->insert_id;
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('дърво','$word_id','$language')");
 	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('I','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('аз','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('I was','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('аз бях','$word_id','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('was','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('бях','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('беше','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('girl','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('момиче','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('the girl','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('момичето','$word_id','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('today','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('днес','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('out','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('навън','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('отвън','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('is','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('е','$word_id','$language')");
 	
 	#french
 	#<<

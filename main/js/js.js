@@ -1299,9 +1299,14 @@ function showWords()
 			{
 				var p = document.createElement("p");
 				div.appendChild(p);
+				div.style = "position: relative";
+				
 				console.log(i);
 				var spanContainer = document.createElement("span");
 				var textWord = document.createElement("text");
+				var levelsContainer = document.createElement("text");
+				levelsContainer.id = "levelsContainer";
+				levelsContainer.innerText = "Ниво: " + state.words[i].level + " | " + "Подниво: " + state.words[i].sublevel;
 				p.appendChild(spanContainer);
 				var comma = document.createElement("text");
 				comma.innerText = ", "
@@ -1319,6 +1324,7 @@ function showWords()
 					{
 						spanContainer.appendChild(comma);
 					}
+					p.appendChild(levelsContainer);
 				}
 			}
 		}
