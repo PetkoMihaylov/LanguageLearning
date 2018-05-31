@@ -726,7 +726,6 @@ function changeUserLanguage($language, $username)
 	$db = dbConnect();
 	$language = $db->real_escape_string($language);
 	$username = $db->real_escape_string($username);
-	print($language);
 	$result = $db->query("SELECT id FROM users WHERE username = '$username'");
 	$userID = $result->fetch_all(MYSQLI_ASSOC)[0]["id"];
 	$result = $db->query("UPDATE users SET language = '$language' WHERE username = '$username'");
@@ -734,24 +733,14 @@ function changeUserLanguage($language, $username)
 	{
 		return false;
 	}
-	print("-");
-	print($userID);
-	print(":");
-	print($language);
-	print("s");
 	$result = $db->query("SELECT level FROM language WHERE userId = '$userID' and name = '$language'");
 	if(!$result)
 	{
 		return false;
 	}
-	print_r($result);
 	$level = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
 	$result = $db->query("SELECT sublevel FROM language WHERE userId = '$userID' and name = '$language'");
 	$sublevel = $result->fetch_all(MYSQLI_ASSOC)[0]["sublevel"];
-	print($level);
-	print("___");
-	print($sublevel);
-	print("___");
 	$result = $db->query("UPDATE users SET level = '$level', sublevel = '$sublevel' WHERE id = '$userID'");
 	if(!$result)
 	{
@@ -760,6 +749,30 @@ function changeUserLanguage($language, $username)
 	return true;
 	
 }
+
+function getWordsUser($username, $language, $level, $sublevel)
+{
+	$db = dbConnect();
+	//$username = $db->real_escape_string($username);
+	$language = $db->real_escape_string($language);
+	$level = $db->real_escape_string($level);
+	$sublevel = $db->real_escape_string($sublevel);
+	
+	$words_result = $db -> query("SELECT * FROM words WHERE level<='$level' and sublevel<='$sublevel' and language = '$language'");
+	$words = $words_result->fetch_all(MYSQLI_ASSOC);
+	//$words_translations_result = $db->query
+	for($i = 0; $i < count($words); $i++)
+	{	
+		$word = $words[$i]['word'];
+		$wordID = $words[$i]['id'];
+		$words_translations_result = $db->query("SELECT word FROM words_translations WHERE  from_language = '$language' and wordID = '$wordID'");
+		$words[$i]['translation'] = $words_translations_result->fetch_all(MYSQLI_ASSOC);
+	}
+	
+	//print_r($words);
+	return $words;	
+}
+
 function getUserLanguage($username)
 {
 	$db = dbConnect();
@@ -865,6 +878,15 @@ else if($command[0] == "change-language")
 else if($command[0] == "login")
 {
 	$result = login($command[1], $command[2]);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
+}
+else if($command[0] == "get-words-user")
+{
+	$username = $command[1];
+	$language = $command[2];
+	$level = $command[3];
+	$sublevel = $command[4];
+	$result = getWordsUser($username, $language, $level, $sublevel);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "get-words-checkbox")
