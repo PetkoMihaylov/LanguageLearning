@@ -1,4 +1,7 @@
 <?php
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL
 //header('Content-Type: application/json');
 define("DB_SALT", "1234rfkgjalvj0q4wjpvaFAFA!@$%kdv;awij09w4fskfer;vner;jlvnaer-");
 
@@ -92,12 +95,37 @@ function login($username, $password)
 function getUserLevel($username)
 {
 	$db = dbConnect();
-	print($username);
 	$username = $db->real_escape_string ($username);
 	$result = $db->query("SELECT level FROM users WHERE username='$username'");
-	$userLevel = $result->fetch_all(MYSQLI_ASSOC);
-	print_r($userLevel);
+	$userLevel = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
 	return $userLevel;
+}
+
+function getUserInfo($username)
+{
+	$db = dbConnect();
+	$username = $db->real_escape_string($username);
+	$result = $db->query("SELECT level FROM users WHERE username = '$username'");
+	$level = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
+	$result = $db->query("SELECT sublevel FROM users WHERE username = '$username'");
+	$sublevel = $result->fetch_all(MYSQLI_ASSOC)[0]["sublevel"];
+	$result = $db->query("SELECT days_played FROM users WHERE username = '$username'");
+	$days_played = $result->fetch_all(MYSQLI_ASSOC)[0]["days_played"];
+	$result = $db->query("SELECT points FROM users WHERE username = '$username'");
+	$points = $result->fetch_all(MYSQLI_ASSOC)[0]["points"];
+	$result = $db->query("SELECT score FROM users WHERE username = '$username'");
+	$score = $result->fetch_all(MYSQLI_ASSOC)[0]["score"];
+	
+	$userInfo = [
+		"level" => $level,
+		"sublevel" => $sublevel,
+		"days_played" => $days_played,
+		"points" => $points,
+		"score" => $score,
+	];
+	
+	return $userInfo;
+	
 }
 
 function registerUser($username, $email, $password)
@@ -107,15 +135,36 @@ function registerUser($username, $email, $password)
 	$username = $db->real_escape_string ($username);
 	$email = $db->real_escape_string ($email);
 	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel)
-				VALUES ('$username', '$email','$password_hash', 'en', 0, 0, 0, 1, 1);");
+				VALUES ('$username', '$email','$password_hash', 'en', 0, 0, 0, 1, 1)");
 	if(!$db->error)
 	{
-		return true;
+		
 	}
 	else
 	{
 		return false;
 	}
+	
+	$result = $db->query("SELECT id FROM users WHERE username = '$username'");
+	$userID = $result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	//print($userID);
+	$languages = array("en", "fr");
+	for($i = 0; $i < count($languages); $i++)
+	{
+		$language = $languages[$i];
+		$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('$languages[$i]', '$userID', 0, 1, 1)");
+		if(!$db->error)
+		{
+			
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	return true;
+	
 }
 
 function getPhrase()
@@ -191,13 +240,7 @@ function getWordCheckbox($limit)
 
 function addPhrase($phrase, $level, $sublevel, $answers)
 {
-	print($phrase);
-	print_r($answers);
 	$db = dbConnect();
-	print($level);
-	print("\n");
-	print($sublevel);
-	print("\n");
 	//check  if phrase already exists;
 	//update
 	
@@ -223,18 +266,15 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 		
 		$answer_length = mb_strlen($answerWords[$j]);
 		$input_length = mb_strlen($inputWords[$j]);
-		print("<br>$answerWords[$j] -6=> $inputWords[$j] -7<br>");
 		$sim = mb_similar_text($answerWords[$j], $inputWords[$j], $percent);
 		if($percent < 75 && $answer_length > 3)
 		{
 			$correct = 0;
-			print($correct);
-			print("you");
 		}
 		else if($answerWords[$j] == $inputWords[$j])
 		{
 			//correct word
-			print("all is good=>$percent");
+			
 		}
 		else
 		{
@@ -248,7 +288,7 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 					{
 							if($sim == 3)
 							{
-								print("$answerWords[$j] => $inputWords[$j] => typo-1 => $sim");
+								
 								//typo
 								$typo++;
 							}
@@ -257,7 +297,7 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 					{
 						if($sim == 2)
 						{
-							print("$answerWords[$j] => $inputWords[$j] => typo-2 => $sim");
+							
 							//typo
 							$typo++;
 						}
@@ -277,44 +317,44 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 						} */
 						if($sim == 1)
 						{
-							print("$answerWords[$j] => $inputWords[$j] => typo-3 => $sim");
+							
 							//typo
 							$typo++;
 						}
 						else
 						{
-							print("$answerWords[$j] => $inputWords[$j] => mistake-1 => $sim");
+							
 							$correct = 0;
 						}
 					}
 					else if($answer_length == 1)
 					{
-						print("show");
+						//print("show");
 						if($sim == 1)
 						{
 							//correct
 						}
 						else
 						{
-							print("$answerWords[$j] => $inputWords[$j] => typo na 1-bukvena duma => $sim");
+							
 							$typo++;
 						}
 					}
 					else
 					{
 						//incorrect the whole exercise
-						print("$answerWords[$j] => $inputWords[$j] => mistake-2 => $sim");
+						
 						$correct = 0;
 					}
 				}
 				else if($answer_length - 1 == $sim)
 				{
-					print("$answerWords[$j] => $inputWords[$j] => typo-4 => $sim");
+					
 					$typo++;
 				}
 				else
 				{
-					print("$answerWords[$j] => $inputWords[$j] => finalfirstcycle => $answer_length => $input_length => $sim");
+					
 					$correct == 0;
 				}
 					//always answer_length = phrase_length
@@ -325,12 +365,12 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 				{
 					if($sim == 2)
 					{
-						print("$answerWords[$j] => $inputWords[$j] => typo-5 => $sim");
+						
 						$typo++;
 					}
 					else
 					{
-						print("$answerWords[$j] => $inputWords[$j] => mistake-3 => $sim");
+						
 						$correct = 0;
 					}
 				}
@@ -338,12 +378,12 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 				{
 					if($sim == 1)
 					{
-						print("$answerWords[$j] => $inputWords[$j] => mistake-3.5 but now a typo => $sim");
+						
 						//$correct = 0; // 'y' is not 'ya' désolé but maybe a missed letter won't be fatal
 					}
 					else
 					{
-						print("$answerWords[$j] => $inputWords[$j] => mistake-3.5 => $sim");
+						
 						$correct = 0;
 						
 					}
@@ -352,7 +392,6 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 				{
 					if($sim == 1)
 					{
-						print("$answerWords[$j] => $inputWords[$j] => typo-5.5 => $sim");
 						$typo++;
 					}
 				}
@@ -365,12 +404,12 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 			{
 				if($answer_length - 1 == $sim)
 				{
-					print("$answerWords[$j] => $inputWords[$j] => typo-6 => $sim");
+					
 					$typo++;
 				}
 				else
 				{
-					print("$answerWords[$j] => $inputWords[$j] => mistake-4 => $sim");
+					
 					$correct = 0;
 				}
 			}
@@ -378,19 +417,17 @@ function check_words($answerWords, $inputWords, $typo, &$correct)
 			{
 				if($answer_length == $sim)
 				{
-					print("$answerWords[$j] => $inputWords[$j] => typo-7 => $sim");
 					$typo++;
 				}
 				else
 				{
-					print("$answerWords[$j] => $inputWords[$j] => mistake-5 => $answer_length => $input_length => $sim");
+					
 					$correct = 0;
 				}
 			}
 			else
 			{
-				print("$answer_length =< $input_length =< $typo");
-				print("$answerWords[$j] => $inputWords[$j] => final => $answer_length => $input_length => $sim");
+				
 				$correct = 0;
 			}
 		}
@@ -405,15 +442,13 @@ function checkPhrase($input, $answers, $phrase)
 {
 	
 	
-	var_dump($answers);
+	//var_dump($answers);
 	//print_r($answers->answer);
 	//print($answers->answer[0]);
 	//print($answers->answer[1]);
 	/* $input = $_POST["input"];
 	$score = $_POST["score"];
 	$phrase = $_POST["correct_word"]; */
-	print("$input -1| ");
-	print("$phrase -2| ");
 	/*reset($words);
 	while(list($key, $value) = each($words))
 	{
@@ -431,7 +466,6 @@ function checkPhrase($input, $answers, $phrase)
 	}*/
 	/*foreach( $words as $key => $value)
 	$values = array_values($words);
-	print($values[]);
 	*/
 	//print_r(array_values($words));
 	//if the random word is in the array(by checking), then get the values assigned to it
@@ -439,7 +473,6 @@ function checkPhrase($input, $answers, $phrase)
 	
 	
 	
-	print("$input -3| ");
 	
 	stripslashes($input);
 	//$input = preg_replace(")", "", $input);
@@ -457,7 +490,6 @@ function checkPhrase($input, $answers, $phrase)
 	{
 		str_replace(array(".", "", $input);
 	} */
-	print_r($answers);
 	
 	for($k = 0; $k < count($answers); $k++)
 	{
@@ -468,7 +500,6 @@ function checkPhrase($input, $answers, $phrase)
 		$answer = preg_replace("/[^[:alnum:][:space:]]/u", '', $answer);
 		$answer = mb_strtolower($answer,  mb_detect_encoding($answer));
 		
-		print("<br><br>$answer -4| $input -5<br><br>");
 		$answerWords = explode(" ", $answer);
 		$inputWords = explode(" ", $input);
 		$answer_length = mb_strlen($answer);
@@ -483,7 +514,6 @@ function checkPhrase($input, $answers, $phrase)
 			if(count($answerWords) == count($inputWords))
 			{
 				check_words($answerWords, $inputWords, $typo, $correct);
-				print($correct);
 			}
 			else if(count($answerWords) != count($inputWords))
 			{
@@ -497,17 +527,14 @@ function checkPhrase($input, $answers, $phrase)
 				$whole_input = str_replace(' ', '', $input);
 				for($j = 0; $j < count($answerWords); $j++)
 				{
-					print("<br>$answerWords[$j] > ");
 				}
 				//$correct = 0;
 				$whole_answer_length = mb_strlen($whole_answer);
 				$whole_input_length = mb_strlen($whole_input);
-				print("$whole_answer => $whole_input");
 				$sim = mb_similar_text($whole_answer, $whole_input, $percent);
 				
 				if($whole_answer_length == $whole_input_length)
 				{
-					print("Whole answer and input => $sim => $percent");
 					if(($whole_answer_length == $sim || $whole_answer_length - 1 == $sim) && $percent > 90)
 					{
 						/* for($v = 0; $v < count($answerWords); $v++)
@@ -574,9 +601,6 @@ function checkPhrase($input, $answers, $phrase)
 									$words_extra_space[$j] = "_";
 								}
 							}
-							print($extra_spaces_typo);
-							print_r($words_spaces);
-							print_r($words_extra_space);
 							//$correct = 1;
 							
 							
@@ -614,13 +638,13 @@ function checkPhrase($input, $answers, $phrase)
 	
 	if($correct == 1)
 	{
-		print("correct | $typo | ");
-		$score++;
+		//print("correct | $typo | ");
+		//$score++;
 		return true;
 	}
 	else
 	{
-		$score = 0;
+		//$score = 0;
 		return false;
 	}
 }
@@ -692,16 +716,39 @@ function changeUserLanguage($language, $username)
 	$db = dbConnect();
 	$language = $db->real_escape_string($language);
 	$username = $db->real_escape_string($username);
-
+	print($language);
+	$result = $db->query("SELECT id FROM users WHERE username = '$username'");
+	$userID = $result->fetch_all(MYSQLI_ASSOC)[0]["id"];
 	$result = $db->query("UPDATE users SET language = '$language' WHERE username = '$username'");
 	if(!$result)
 	{
 		return false;
 	}
-	else
+	print("-");
+	print($userID);
+	print(":");
+	print($language);
+	print("s");
+	$result = $db->query("SELECT level FROM language WHERE userId = '$userID' and name = '$language'");
+	if(!$result)
 	{
-		return true;
+		return false;
 	}
+	print_r($result);
+	$level = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
+	$result = $db->query("SELECT sublevel FROM language WHERE userId = '$userID' and name = '$language'");
+	$sublevel = $result->fetch_all(MYSQLI_ASSOC)[0]["sublevel"];
+	print($level);
+	print("___");
+	print($sublevel);
+	print("___");
+	$result = $db->query("UPDATE users SET level = '$level', sublevel = '$sublevel' WHERE id = '$userID'");
+	if(!$result)
+	{
+		return false;
+	}
+	return true;
+	
 }
 function getUserLanguage($username)
 {
@@ -713,7 +760,7 @@ function getUserLanguage($username)
 		print("Error");
 	}
 	$language = $result->fetch_all(MYSQLI_ASSOC)[0]["language"];
-	$language = $db->real_escape_string($language);
+	
 	return $language;
 }
 /*
@@ -748,9 +795,6 @@ else if($command[0] == "check-phrase")
 	$input = $command[1];
 	$answers = $command[2];
 	$phrase = $command[3];
-	print($input);
-	print_r($answers);
-	print($phrase);
 	//print($command[4]);
 	//$printer = "s";
 	$checkPhraseResult = checkPhrase($input, $answers, $phrase);
@@ -793,11 +837,13 @@ else if($command[0] == "register-user")
 }
 else if($command[0] == "get-user-info")
 {
-	
+	$username = $command[1];
+	//$language = $command[2];
+	$result = getUserInfo($username);
+	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "get-user-level")
 {
-	
 	$result = getUserLevel($command[1]);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }

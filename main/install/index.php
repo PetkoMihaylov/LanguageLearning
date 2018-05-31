@@ -83,9 +83,10 @@ function dbInit($password)
 						)
 						");
 	
-	$language = $db->query("Create table languageprogress(
-						  name VARCHAR(30) NOT NUL,
+	$language = $db->query("Create table language(
+						  name VARCHAR(30) NOT NULL,
 						  userID INTEGER NOT NULL,
+						  score INTEGER NOT NULL,
 						  level INTEGER NOT NULL,
 						  sublevel INTEGER NOT NULL,
 						  FOREIGN KEY(userId) REFERENCES users(id)
@@ -93,6 +94,11 @@ function dbInit($password)
 						  ");
 						  // the name of the language should not be unique--
 	//
+	if (!$language)
+	{
+		print("Phrases:\n");
+		print($db->error);
+	}
    $phrases = $db->query("Create table phrases(
 						id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
 						phrase VARCHAR(256),
@@ -384,13 +390,23 @@ function dbInit($password)
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('зайче','$word_id','$language')");
 	
 	
+	
 	#>>	
 	
 	
 	
 	$password = "vasko3";
 	$password_hash = hash("sha512", $password . DB_SALT);
-	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('Vasko2', 'vasko@mail.com', '$password_hash', 'en', 0, 0, 0, 1, 1);");
+	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('Vasko2', 'vasko@mail.com', '$password_hash', 'en', 0, 0, 0, 1, 3);");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 1, 0, 1, 3)");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 1, 0, 1, 5)");
+	
+	$password = "adminadmin";
+	$password_hash = hash("sha512", $password . DB_SALT);
+	
+	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('admin', 'admin@mail.com', '$password_hash', 'en', 0, 0, 0, 5, 5);");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 2, 0, 5, 5)");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 2, 0, 5, 2)");
 	
 	/* $db->query("INSERT INTO comments () VALUES ('Vasko2', 'vasko@mail.com',	'$password_hash', 'en', 0, 0, 0, 1, 1);"); */
 	

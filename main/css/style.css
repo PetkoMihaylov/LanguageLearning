@@ -95,6 +95,7 @@ main>textarea
     padding-right: 50%;
     margin: 0 auto;
     background-color: #b7b7b7;
+	overflow: auto;
     /* margin-left: 150px; */
     display: block;
     font-size: 23px;
