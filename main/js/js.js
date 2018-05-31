@@ -8,6 +8,7 @@ var userLanguageField = document.getElementById("userLanguage");
 var userLevelField = document.getElementById("userLevel");
 var userConsecutiveDaysField = document.getElementById("userConsecutiveDays");
 state.playedToday;
+state.cameFromExercise;
 	var div = document.querySelector('body>main');
 
 /*  var calculate = function() {
@@ -28,7 +29,10 @@ calculate().done(function (result) {
     alert(result)
 }) */
 	
-	
+window.onbeforeunload = function() {
+  return "Data will be lost if you leave the page, are you sure?";
+};
+
 function getUserLanguage(callback)
 {
 	sendCommand(["get-user-language", state.username], 
@@ -105,6 +109,14 @@ function playAudio(phrase)
 	function setVoice() {
 		console.log(this.value);
 		msg.voice = voices.find(voice => voice.name === this.value);
+		if(globalLanguage == "fr")
+		{
+			msg.voice = voices.find(voice => voice.name === 'Google français');
+		}
+		else
+		{
+			
+		}
 		toggle();
 	}
 	function toggle(startOver = true) {
@@ -812,7 +824,7 @@ function showImages(div)
 	button.disabled = true;
 	
 	var buttonC = document.createElement("button");
-	buttonC.textContent="Пропусни";
+	buttonC.textContent="Продължи";
 	buttonC.id = "continueButton";
 	buttonC.className = "btn btn-secondary";
 	buttonC.disabled = true;
@@ -865,6 +877,46 @@ function showImages(div)
 		{
 			clearDiv(container);
 			startWrongExercises(container);
+		}
+		else
+		{
+			button.innerText = "Finish";
+			button.style="bottom: 30%, right: 10%";
+			
+			button.addEventListener (
+				'click',
+				function(e)
+				{
+					var level = state.level;
+					var sublevel = state.sublevel;
+					sendCommand(["update-user-score-and-level", state.username, 10, globalLanguage, level, sublevel],
+						function(r)
+						{
+							console.log(r);
+							state.userAttributes = r;
+						},false
+					);
+							
+					var cookieExists = getCookie("playedToday");
+					if(!cookieExists)
+					{
+						createCookiePlayed("playedToday", 1 );
+						state.playedToday = true;
+					}
+					clearDiv(div);
+					console.log(level);
+					clearDiv(otherDiv);
+					state.cameFromExercise = true;
+					showLevel(div, level);
+					//checked = true;
+					/*var p = document.createElement("p");
+					p.className = "photo-caption";
+					p.textContent = e.target._name;
+					//console.log(e.target.parentElement);
+					e.target.parentElement.appendChild(p); */
+					//console.log(e.target.src);
+				}
+			);
 		}
 	}
 }
@@ -1249,7 +1301,19 @@ function getPhraseComments(phraseId, div)
 	var button = document.createElement("button");
 	button.type = "submit";
 	commentField.style = "width: 80%; height: 10em; margin: 0 auto; resize: vertical";
-	
+	commentField.addEventListener(
+		'input',
+		function(e){
+			if(commentField.value.length < 1)
+			{
+				button.disabled = true;
+			}
+			else
+			{
+				button.disabled = false;
+			}
+		}
+	)
 	form.appendChild(button);
 	console.log(state.username);
 	button.innerText = "Постави";
@@ -1319,7 +1383,11 @@ function showProgress()
 				var p = document.createElement("p");
 				p.className = "progressInfoContainer";
 				div.appendChild(p);
-				
+				var img = document.createElement("img");
+				img.src = `/../images/${languageName}.jpg`;
+				img.height = 120;
+				img.width = 120;
+				p.appendChild(img);
 				
 				var languageNameText = document.createElement("text");
 				var languageLevelText = document.createElement("text");
@@ -1464,17 +1532,21 @@ function startExercises(div)
 					state.button.disabled = false;
 					button.innerText = "Finish";
 					button.style="bottom: 30%, right: 10%";
+					
 					button.addEventListener (
 						'click',
 						function(e)
 						{
-							sendCommand(["update-user-score", state.username, 10, globalLanguage],
+							var level = state.level;
+							var sublevel = state.sublevel;
+							sendCommand(["update-user-score-and-level", state.username, 10, globalLanguage, level, sublevel],
 								function(r)
 								{
 									console.log(r);
-									state.score = score;
+									state.userAttributes = r;
 								},false
 							);
+									
 							var cookieExists = getCookie("playedToday");
 							if(!cookieExists)
 							{
@@ -1482,8 +1554,9 @@ function startExercises(div)
 								state.playedToday = true;
 							}
 							clearDiv(div);
-							var level = state.level;
 							console.log(level);
+							clearDiv(otherDiv);
+							state.cameFromExercise = true;
 							showLevel(div, level);
 							//checked = true;
 							/*var p = document.createElement("p");
@@ -1492,7 +1565,6 @@ function startExercises(div)
 							//console.log(e.target.parentElement);
 							e.target.parentElement.appendChild(p); */
 							//console.log(e.target.src);
-							clearDiv(otherDiv);
 						}
 					);
 				}
@@ -1506,7 +1578,15 @@ function startExercises(div)
 
 function showLevel(div, level)
 {
-	
+	if(state.cameFromExercise)
+	{
+		getUserInfo(function()
+		{
+			clearDiv(div);
+			state.cameFromExercise = false;
+			showLevel(div, level);
+		})
+	}
 	var ul = document.createElement("ul");
 	div.appendChild(ul);
 	//state.level = level;
@@ -1586,6 +1666,9 @@ function showLevel(div, level)
 
 function showMainPage(div)
 {
+	getUserInfo(function(){
+		var no = document.createElement("p");
+	})
 	var ul = document.createElement("ul");
 	div.appendChild(ul);
 	for(var i = 0; i < 5; i++)
@@ -1886,6 +1969,7 @@ function showLogin(div)
 						'click',
 						function(e)
 						{
+							clearButtonFinish();
 							setCookie("username", "", 0);
 							setCookie("password", "", 0);
 							usernameField.innerText = "";
@@ -1979,6 +2063,7 @@ function main()
 							userLanguageField = ""; */
 							clearDiv(div);
 							button.innerText = "Влез";
+							clearButtonFinish();
 							showLogin(div);
 						}
 					);
@@ -1988,7 +2073,6 @@ function main()
 					console.log(state.username);
 					console.log(globalLanguage);
 					getUserInfo(function(){
-						clearDiv(div);
 						showMainPage(div);
 						clearDiv(div);
 					});

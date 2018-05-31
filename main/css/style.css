@@ -314,6 +314,13 @@ main>div>li
     border-image-outset: initial;
     border-image-repeat: initial;
 }
+
+p.progressInfoContainer
+{
+	background-color: #9c9c9c;
+    color: #100404;
+    font-size: 18px;
+}
 main>div>li>div.images
 {
 	position: relative;

@@ -787,14 +787,60 @@ function getUserLanguage($username)
 	return $language;
 }
 
-function updateUserScore($username, $score_to_update, $language)
+function updateUserScoreAndLevel($username, $score_to_update, $language, $level, $sublevel)
 {
 	$db = dbConnect();
 	$language = $db->real_escape_string($language);
 	$username = $db->real_escape_string($username);
+	$level = $db->real_escape_string($level);
+	$sublevel = $db->real_escape_string($sublevel);
+	
 	$score_to_update = $db->real_escape_string($score_to_update);
+	
 	$userID_result = $db->query("SELECT id FROM users WHERE username = '$username'");
 	$userID = $userID_result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	
+	$userLevel_result = $db->query("SELECT level FROM users WHERE id = '$userID'");
+	$userLevel = $userLevel_result->fetch_all(MYSQLI_ASSOC)[0]["level"];
+	$userSublevel_result = $db->query("SELECT sublevel FROM users WHERE id = '$userID'");
+	$userSublevel = $userSublevel_result->fetch_all(MYSQLI_ASSOC)[0]["sublevel"];
+	
+	print("$level - $userLevel");
+	print("\n$sublevel - $userSublevel");
+	if($sublevel < 5 && $sublevel == $userSublevel && $level == $userLevel)
+	{
+		$sublevel+=1;
+		$language_result = $db->query("UPDATE language SET sublevel = '$sublevel' WHERE userID = '$userID' and name = '$language'");
+		
+		$language_result = $db->query("UPDATE users SET sublevel = '$sublevel' WHERE id = '$userID' and language = '$language'");
+	}
+	else if($sublevel == 5 && $sublevel == $userSublevel && $level == $userLevel)
+	{
+		if($level <= 4)
+		{
+			$level+=1;
+			$sublevel = 1;
+			$language_result = $db->query("UPDATE language SET level = '$level' WHERE name = '$language' and userID = '$userID'");
+			$language_result = $db->query("UPDATE language SET sublevel = '$sublevel' WHERE name = '$language' and userID = '$userID'");
+			
+			$language_result = $db->query("UPDATE users SET level = '$level' WHERE language = '$language' and id = '$userID'");
+			$language_result = $db->query("UPDATE users SET sublevel = '$sublevel' WHERE language = '$language' and id = '$userID'");
+		}
+		else
+		{
+			//maximum level reached;
+		}
+		
+	}
+	/* if($level > $userLevel)
+	{
+		if($level < 6)
+		{
+			$language_result = $db->query("UPDATE language SET level = '$level' WHERE userID = '$userID' and name='$language'");
+			$sublevel = 1;
+			$language_result = $db->query("UPDATE language SET sublevel = '$sublevel' WHERE userID = '$userID' and name = '$language'");
+		}
+	} */
 	
 
 	$score_result = $db->query("SELECT score FROM users WHERE username = '$username'");
@@ -820,7 +866,6 @@ function updateUserScore($username, $score_to_update, $language)
 		return false;
 	}
 	return $userScore;
-	
 }
 function getUserProgress($username, $language)
 {
@@ -943,12 +988,14 @@ else if($command[0] == "update-date-user")
 	$result = updateDateUser($username, $days_played_to_add);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
-else if($command[0] == "update-user-score")
+else if($command[0] == "update-user-score-and-level")
 {
 	$username = $command[1];
 	$score_to_update = $command[2];
 	$language = $command[3];
-	$result = updateUserScore($username, $score_to_update, $language);
+	$level = $command[4];
+	$sublevel = $command[5];
+	$result = updateUserScoreAndLevel($username, $score_to_update, $language, $level, $sublevel);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "get-level")
