@@ -460,6 +460,8 @@ function dbInit($password)
 	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 2, 0, 5, 5)");
 	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 2, 0, 5, 5)");
 	
+	
+	$db->query("INSERT INTO levelContent(text, level) VALUES ('В тези уроци са представени начални думи. Можете да отидете в думи по-горе и да прочетете всичките за даденото ниво и подниво и да се пробвате след това в упражненията тук.', 1");
 	/* $db->query("INSERT INTO comments () VALUES ('Vasko2', 'vasko@mail.com',	'$password_hash', 'en', 0, 0, 0, 1, 1);"); */
 	
 	$db->close();

@@ -1,7 +1,7 @@
 ﻿"use strict";
 
 var state={};
-var globalLanguage; //by default 'en', but changed to the user specific one
+var globalLanguage = "en"; //by default 'en', but changed to the user specific one
 
 var usernameField = document.getElementById("username");
 var userLanguageField = document.getElementById("userLanguage");
@@ -35,28 +35,29 @@ window.onbeforeunload = function() {
 
 function getUserLanguage(callback)
 {
-	sendCommand(["get-user-language", state.username], 
-				function (r){
-					console.log(r);
-					globalLanguage = r;
-					console.log(globalLanguage);
-					if(globalLanguage != "en" && globalLanguage != "fr")
-					{
-						globalLanguage = globalLanguage.replace(/['"]+/g, '');
-						globalLanguage = globalLanguage.replace(/\s/g,'');
-						globalLanguage = globalLanguage.toString();
+	
+		sendCommand(["get-user-language", state.username], 
+					function (r){
+						console.log(r);
+						globalLanguage = r;
 						console.log(globalLanguage);
+						if(globalLanguage != "en" && globalLanguage != "fr")
+						{
+							globalLanguage = globalLanguage.replace(/['"]+/g, '');
+							globalLanguage = globalLanguage.replace(/\s/g,'');
+							globalLanguage = globalLanguage.toString();
+							console.log(globalLanguage);
+						}
+						console.log(globalLanguage);
+						var userLanguageField = document.getElementById("userLanguage");
+						state.languageName = getLanguageName(globalLanguage);
+						userLanguageField.innerText = "Език: " + state.languageName;
+						callback ();
+						//console.log(state.languageName);
 					}
-					console.log(globalLanguage);
-					var userLanguageField = document.getElementById("userLanguage");
-					state.languageName = getLanguageName(globalLanguage);
-					userLanguageField.innerText = "Език: " + state.languageName;
-					callback ();
-					//console.log(state.languageName);
-				}
-				
-				
-	);
+					
+					
+		);
 	
 	//console.log(globalLanguage);
 	//return globalLanguage;
@@ -189,8 +190,10 @@ function switchLanguageEn()//state
 						if(r)
 						{
 							getUserInfo(function(){
+								console.log(state.userInfo)
 								clearDiv(div);
-							showMainPage(div);});
+								showMainPage(div);
+							});
 							console.log("Language changed");
 						}
 						else
@@ -225,6 +228,7 @@ function switchLanguageFr()
 						if(r)
 						{
 							getUserInfo(function(){
+								console.log(state.userInfo)
 								clearDiv(div);
 								showMainPage(div);
 							});
@@ -684,7 +688,7 @@ function showImages(div)
 	p.id = "imageContainer";
 	itemContainer.appendChild(p);
 	
-	var unlock = 0;
+	// var unlock = 0;
 	var words = [];
 	var incorrectWords = [];
 	var emptyJoin = [];
@@ -834,18 +838,22 @@ function showImages(div)
 	button.textContent = "Провери";
 	button.onclick = function() 
 	{
+		var answerText = document.createElement("answerText");
+		var answerTextContainer = document.createElement("p");
+		p.appendChild(answerText)
 		if(inps[correctWord].checked)
 		{
 			//incrementScore();
-			unlock = 1;
+			//unlock = 1;
 			console.log("correct");
+			answerText.innerText = "Правилно!";
 		}
 		else
 		{
 			console.log("-15");
 			state.wrongExercises.push({"index" : imageIndex, "exercise" : showImages});
 			console.log(state.wrongExercises);
-			
+			answerText.innerText = "Неправилно. Верният отговор е " + "'" + word + "'";
 		}
 		
 		//label.removeEventListener('click', buttonContinuation());
@@ -1363,102 +1371,112 @@ function showHome()
 }
 function showProgress()
 {
-	clearButtonFinish();
-	sendCommand(
-		["get-user-progress", state.username, globalLanguage],
-		function(r)
-		{
-			console.log(r);
-			state.progress = r;
-			console.log(state.progress);
-			var div = document.querySelector('body>main');
-			clearDiv(div);
-			for(var i = 0; state.progress.length > i; i++)
+	var username = getCookie("username");
+	var password = getCookie("password");
+	if(username && password)
+	{
+		clearButtonFinish();
+		sendCommand(
+			["get-user-progress", state.username, globalLanguage],
+			function(r)
 			{
-				var languageName = getLanguageName(state.progress[i].name);
-				console.log(languageName);
-				var newLine = document.createElement("text");
-				newLine.innerText = '\n';
-				
-				var p = document.createElement("p");
-				p.className = "progressInfoContainer";
-				div.appendChild(p);
-				var img = document.createElement("img");
-				img.src = `/../images/${languageName}.jpg`;
-				img.height = 120;
-				img.width = 120;
-				p.appendChild(img);
-				
-				var languageNameText = document.createElement("text");
-				var languageLevelText = document.createElement("text");
-				var languageSublevelText = document.createElement("text");
-				var languageScoreText = document.createElement("text");
-				//var imageContainer
-				
-				languageNameText.innerText = "Език: " + languageName + "\n";
-				languageLevelText.innerText = "Ниво: " + state.progress[i].level + "\n";
-				languageSublevelText.innerText = "Подниво: " + state.progress[i].level +"\n";
-				languageScoreText.innerText = "Резултат към този език: " + state.progress[i].score;
-				
-				p.appendChild(languageNameText);
-				//p.appendChild(newLine);
-				p.appendChild(languageLevelText);
-				p.appendChild(languageSublevelText);
-				p.appendChild(languageScoreText);
-				
+				console.log(r);
+				state.progress = r;
+				console.log(state.progress);
+				var div = document.querySelector('body>main');
+				clearDiv(div);
+				for(var i = 0; state.progress.length > i; i++)
+				{
+					var languageName = getLanguageName(state.progress[i].name);
+					console.log(languageName);
+					var newLine = document.createElement("text");
+					newLine.innerText = '\n';
+					
+					var p = document.createElement("p");
+					p.className = "progressInfoContainer";
+					div.appendChild(p);
+					var img = document.createElement("img");
+					img.src = `/../images/${languageName}.jpg`;
+					img.height = 120;
+					img.width = 120;
+					p.appendChild(img);
+					
+					var languageNameText = document.createElement("text");
+					var languageLevelText = document.createElement("text");
+					var languageSublevelText = document.createElement("text");
+					var languageScoreText = document.createElement("text");
+					//var imageContainer
+					
+					languageNameText.innerText = "Език: " + languageName + "\n";
+					languageLevelText.innerText = "Ниво: " + state.progress[i].level + "\n";
+					languageSublevelText.innerText = "Подниво: " + state.progress[i].level +"\n";
+					languageScoreText.innerText = "Резултат към този език: " + state.progress[i].score;
+					
+					p.appendChild(languageNameText);
+					//p.appendChild(newLine);
+					p.appendChild(languageLevelText);
+					p.appendChild(languageSublevelText);
+					p.appendChild(languageScoreText);
+					
+				}
 			}
-		}
-	);
+		);
+	}
 }
 
 function showWords()
 {
-	clearButtonFinish();
-	sendCommand(
-		["get-words-user", state.username, globalLanguage, state.userInfo.level, state.userInfo.sublevel],
-		function (r)
-		{
-			var div = document.querySelector('body>main');
-			clearDiv(div);
-			console.log(r);
-			state.words = r;
-			console.log(state.words.length);
-			for(var i = 0; state.words.length > i; i++)
+	var username = getCookie("username");
+	var password = getCookie("password");
+	if(username && password)
+	{
+		clearButtonFinish();
+		sendCommand(
+			["get-words-user", state.username, globalLanguage, state.userInfo.level, state.userInfo.sublevel],
+			function (r)
 			{
-				var p = document.createElement("p");
-				p.className = "wordContent";
-				div.appendChild(p);
-				div.style = "position: relative";
-				
-				console.log(i);
-				var spanContainer = document.createElement("span");
-				spanContainer.className = "spanContainer";
-				var textWord = document.createElement("text");
-				var levelsContainer = document.createElement("text");
-				levelsContainer.id = "levelsContainer";
-				levelsContainer.innerText = "Ниво: " + state.words[i].level + " | " + "Подниво: " + state.words[i].sublevel;
-				p.appendChild(spanContainer);
-				var comma = document.createElement("text");
-				comma.innerText = ", "
-				var textDivision = document.createElement("text");
-				textDivision.innerText = " | ";
-				spanContainer.appendChild(textWord);
-				textWord.innerText = state.words[i].word;
-				spanContainer.appendChild(textDivision);
-				for(var j = 0; state.words[i].translation.length > j; j++)
+				var div = document.querySelector('body>main');
+				clearDiv(div);
+				console.log(r);
+				state.words = r;
+				console.log(state.words.length);
+				for(var i = 0; state.words.length > i; i++)
 				{
-					var textTranslation = document.createElement("text");
-					spanContainer.appendChild(textTranslation);
-					textTranslation.innerText = state.words[i].translation[j].word;
-					if(state.words[i].translation.length > j +1)
+					var p = document.createElement("p");
+					p.className = "wordContent";
+					div.appendChild(p);
+					div.style = "position: relative";
+					
+					console.log(i);
+					var spanContainer = document.createElement("span");
+					spanContainer.className = "spanContainer";
+					var textWord = document.createElement("text");
+					var levelsContainer = document.createElement("text");
+					levelsContainer.id = "levelsContainer";
+					levelsContainer.innerText = "Ниво: " + state.words[i].level + " | " + "Подниво: " + state.words[i].sublevel;
+					p.appendChild(spanContainer);
+					var comma = document.createElement("text");
+					comma.innerText = ", "
+					var textDivision = document.createElement("text");
+					textDivision.innerText = " | ";
+					spanContainer.appendChild(textWord);
+					textWord.innerText = state.words[i].word;
+					spanContainer.appendChild(textDivision);
+					for(var j = 0; state.words[i].translation.length > j; j++)
 					{
-						spanContainer.appendChild(comma);
+						var textTranslation = document.createElement("text");
+						spanContainer.appendChild(textTranslation);
+						textTranslation.innerText = state.words[i].translation[j].word;
+						if(state.words[i].translation.length > j +1)
+						{
+							spanContainer.appendChild(comma);
+						}
+						p.appendChild(levelsContainer);
 					}
-					p.appendChild(levelsContainer);
 				}
 			}
-		}
-	);
+		);
+	}
 }
 
 function startWrongExercises(div)
@@ -1668,48 +1686,50 @@ function showMainPage(div)
 {
 	getUserInfo(function(){
 		var no = document.createElement("p");
-	})
-	var ul = document.createElement("ul");
-	div.appendChild(ul);
-	for(var i = 0; i < 5; i++)
-	{
-		var li = document.createElement("li");
-		ul.appendChild(li);
-		var a = document.createElement("a");
-		li.appendChild(a);
-		a.href = "#";
-		a.level = i+1;
-		var img = document.createElement("img");
-		img.src = `/../images/level_${a.level}.jpg`;
+		clearDiv(div);
 		
-		img.height = 120;
-		img.width = 120;
-		
-		img.className = "levels";
-		a.appendChild(img);
-		a.className = "disabled";
-		a.appendChild(document.createTextNode( `Ниво ${a.level}`));
-		console.log(state.userInfo.level);
-		console.log(state.userInfo.sublevel);
-		
-		if(state.userInfo.level > i)
+		var ul = document.createElement("ul");
+		div.appendChild(ul);
+		for(var i = 0; i < 5; i++)
 		{
-			a.onclick = function (event){
-				event.preventDefault();
-				clearDiv(div);
-				console.log(this.level);
-				state.level = this.level;
-				showLevel(div, this.level);
-			};
-		}
-		else
-		{
-			a.onclick = function()
+			var li = document.createElement("li");
+			ul.appendChild(li);
+			var a = document.createElement("a");
+			li.appendChild(a);
+			a.href = "#";
+			a.level = i+1;
+			var img = document.createElement("img");
+			img.src = `/../images/level_${a.level}.jpg`;
+			
+			img.height = 120;
+			img.width = 120;
+			
+			img.className = "levels";
+			a.appendChild(img);
+			a.className = "disabled";
+			a.appendChild(document.createTextNode( `Ниво ${a.level}`));
+			//console.log(state.userInfo.level);
+			//console.log(state.userInfo.sublevel);
+			
+			if(state.userInfo.level > i)
 			{
-				alert("Направи другите нива първо!");
+				a.onclick = function (event){
+					event.preventDefault();
+					clearDiv(div);
+					console.log(this.level);
+					state.level = this.level;
+					showLevel(div, this.level);
+				};
+			}
+			else
+			{
+				a.onclick = function()
+				{
+					alert("Направи другите нива първо!");
+				}
 			}
 		}
-	}
+	});
 }
 
 function setCookie(cname, cvalue, exdays) {
@@ -1803,14 +1823,27 @@ function resetAtMidnight() {
 		var username = getCookie("username");
 		if(cookieExists)
 		{
+			var result;
 			var daysPlayed = 1;
 			sendCommand(["update-date-user", username, daysPlayed],
 				function(r){
 					console.log(r);
+					if(r)
+					{
+						result = true;
+					}
+					else
+					{
+						result = false;
+					}
 					//state.lostStreak = false;
-				}, false
+				}
 			);
-			getUserInfo();
+			getUserInfo(function()
+			{
+				clear(div);
+				main();
+			});
 		}
 		else
 		{
@@ -1821,7 +1854,11 @@ function resetAtMidnight() {
 					//state.lostStreak = true;
 				}, false
 			);
-			getUserInfo();
+			getUserInfo(function()
+			{
+				clear(div);
+				main();
+			});
 		}
         reset();              //      <-- This is the function being called at midnight.
         resetAtMidnight();    //      Then, reset again next midnight.
@@ -1869,20 +1906,22 @@ function dateDaysPlayed()
 	alert(daysSince); // */
 }
 
-function getUserInfo(callback) //level, sublevel, consecutive days and last day played
+function getUserInfo(callback) //level, sublevel, consecutive days, fiskato
 {
-	sendCommand(["get-user-info", state.username],
-				function (r){
-					console.log(r);
-					state.userInfo = r;
-					console.log(state);
-					var userLevelField = document.getElementById("userLevel");
-					userLevelField.innerText = "Ниво: " + state.userInfo.level + "\n" + "Подниво: " + state.userInfo.sublevel;
-					var userDaysField = document.getElementById("userDays"); 
-					userDaysField.innerText = "Играни поред: " + state.userInfo.days_played + "\n" + " Резултат: " + state.userInfo.score + "\n" + " Точки: " + state.userInfo.points;
-					callback();
-				}
-				);
+	if(globalLanguage != 'null' && globalLanguage != undefined)
+	{
+		sendCommand(["get-user-info", state.username, globalLanguage],
+					function (r){
+						console.log(r);
+						state.userInfo = r;
+						var userLevelField = document.getElementById("userLevel");
+						userLevelField.innerText = "Ниво: " + state.userInfo.level + "\n" + "Подниво: " + state.userInfo.sublevel;
+						var userDaysField = document.getElementById("userDays"); 
+						userDaysField.innerText = "Играни поред: " + state.userInfo.days_played + "\n" + " Резултат: " + state.userInfo.score + "\n";
+						callback();
+					}
+		);
+	}
 }
 function clearFields()
 {
@@ -1944,45 +1983,45 @@ function showLogin(div)
 					globalLanguage = getUserLanguage(
 					function()
 					{
+						state.globalLanguage = globalLanguage;
 						console.log(globalLanguage);
-					console.log(state.languageName);
-					var usernameField = document.getElementById("username");
-					usernameField.innerText = username.value;
-					var userLanguageField = document.getElementById("userLanguage");
-					userLanguageField.innerText = "Eзик: " + state.languageName;
-					console.log(state.username);
+						console.log(state.languageName);
+						var usernameField = document.getElementById("username");
+						usernameField.innerText = username.value;
+						var userLanguageField = document.getElementById("userLanguage");
+						userLanguageField.innerText = "Eзик: " + state.languageName;
+						console.log(state.username);
+						getUserInfo(function(){
+							console.log(state.getUserInfo);
+						});
+						document.getElementById("languageChoice").disabled = false;
+						setCookie("username", username.value, 365);
+						setCookie("password", password.value, 365);
+						clearDiv(div);
+						var button = document.getElementById("log");
+						button.innerText = "Излез";
+						//dateDaysPlayed();
 						
+						button.addEventListener (
+							'click',
+							function(e)
+							{
+								clearButtonFinish();
+								setCookie("username", "", 0);
+								setCookie("password", "", 0);
+								usernameField.innerText = "";
+								userLanguageField.innerText = "";
+								clearDiv(div);
+								document.getElementById("languageChoice").disabled = true;
+								document.getElementById("languageDropdown").className = "dropdown-content hidden";
+								globalLanguage = "en";
+								button.innerText = "Влез";
+								showLogin(div);
+							}
+						);
+						showMainPage(div);
 					}
 					);
-					getUserInfo(function(){
-							clearDiv(div);
-							showMainPage(div);
-							});
-					document.getElementById("languageChoice").disabled = false;
-					setCookie("username", username.value, 365);
-					setCookie("password", password.value, 365);
-					clearDiv(div);
-					var button = document.getElementById("log");
-					button.innerText = "Излез";
-					//dateDaysPlayed();
-					button.addEventListener (
-						'click',
-						function(e)
-						{
-							clearButtonFinish();
-							setCookie("username", "", 0);
-							setCookie("password", "", 0);
-							usernameField.innerText = "";
-							userLanguageField.innerText = "";
-							clearDiv(div);
-							document.getElementById("languageChoice").disabled = true;
-							document.getElementById("languageDropdown").className = "dropdown-content hidden";
-							globalLanguage = "en";
-							button.innerText = "Влез";
-							showLogin(div);
-						}
-					);
-					showMainPage(div);
 				}
 				else
 				{
@@ -2072,13 +2111,14 @@ function main()
 					state.username = username;
 					console.log(state.username);
 					console.log(globalLanguage);
-					getUserInfo(function(){
-						showMainPage(div);
-						clearDiv(div);
-					});
+					
 					globalLanguage = getUserLanguage(
 						function ()
 						{
+							state.globalLanguage = globalLanguage;
+							getUserInfo(function(){
+							});
+
 							console.log(globalLanguage);
 							state.languageName = getLanguageName(globalLanguage);
 							console.log(state.languageName)
@@ -2097,7 +2137,8 @@ function main()
 							/* state.today = date();
 							console.log(state.today); */
 							showMainPage(div);
-						});
+						}
+					);
 				}
 				else
 				{

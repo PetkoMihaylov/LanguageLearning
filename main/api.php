@@ -111,10 +111,11 @@ function getUserLevel($username)
 	return $userLevel;
 }
 
-function getUserInfo($username)
+function getUserInfo($username, $language)
 {
 	$db = dbConnect();
 	$username = $db->real_escape_string($username);
+	$language = $db->real_escape_string($language);
 	$result = $db->query("SELECT level FROM users WHERE username = '$username'");
 	$level = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
 	$result = $db->query("SELECT sublevel FROM users WHERE username = '$username'");
@@ -123,8 +124,15 @@ function getUserInfo($username)
 	$days_played = $result->fetch_all(MYSQLI_ASSOC)[0]["days_played"];
 	$result = $db->query("SELECT points FROM users WHERE username = '$username'");
 	$points = $result->fetch_all(MYSQLI_ASSOC)[0]["points"];
-	$result = $db->query("SELECT score FROM users WHERE username = '$username'");
+	
+	$userID_result = $db->query("SELECT id FROM users WHERE username = '$username'");
+	$userID = $userID_result->fetch_all(MYSQLI_ASSOC)[0]["id"];
+	
+	$result = $db->query("SELECT score FROM language WHERE userID = '$userID' and name = '$language'");
 	$score = $result->fetch_all(MYSQLI_ASSOC)[0]["score"];
+	
+	$update = $db->query("UPDATE users SET score='$score' WHERE id = '$userID'");
+	//$update = $db->query("UPDATE users SET score = '$score' WHERE id = '$userID'");
 	
 	$userInfo = [
 		"level" => $level,
@@ -1014,8 +1022,9 @@ else if($command[0] == "register-user")
 else if($command[0] == "get-user-info")
 {
 	$username = $command[1];
+	$language = $command[2];
 	//$language = $command[2];
-	$result = getUserInfo($username);
+	$result = getUserInfo($username, $language);
 	print (json_encode($result, JSON_UNESCAPED_UNICODE));
 }
 else if($command[0] == "get-user-level")
