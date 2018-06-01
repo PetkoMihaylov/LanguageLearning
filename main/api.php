@@ -884,6 +884,7 @@ function getUserProgress($username, $language)
 	
 	$language_result = $db->query("SELECT * FROM language WHERE userID = '$userID'");
 	$language = $language_result->fetch_all(MYSQLI_ASSOC);
+	
 	return $language;
 }
 

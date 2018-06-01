@@ -214,17 +214,7 @@ function switchLanguageEn()//state
 					
 }
 
-document.onClick = function(e)
-{
-	if(e.target.id!="languageDropdown")
-	{
-		document.getElementById("languageDropdown").className = "dropdown-content hidden";
-	}
-	else
-	{
-		console.log("d");
-	}
-}
+
 
 function switchLanguageFr()
 {
@@ -431,6 +421,12 @@ function makeListeningExercise(div)
 	)
 	var answer;
 	var previousCounter = state.listeningCounter;
+	var pContainer = document.createElement("p");
+	var text = document.createElement("text");
+	var textContainer = document.createElement("span");
+	div.appendChild(pContainer);
+	pContainer.appendChild(textContainer);
+	textContainer.appendChild(text);
 	form.onsubmit = function (event) {
 		event.preventDefault();
 		phraseInput.disabled = true;
@@ -444,12 +440,13 @@ function makeListeningExercise(div)
 						{
 							console.log("-16");
 							answer = "correct";
+							text.innerText = "Правилно!";
 						}
 						else
 						{
 							state.wrongExercises.push({"index" : previousCounter, "phrase" : phrase, "exercise" : makeListeningExercise});
 							console.log(state.wrongExercises);
-							answer = "incorrect";
+							text.innerText = "Неправилно! Отговорът е:\n" + phrase;
 						}
 						//buttonContinue.disabled = false;
 						button.disabled = true;
@@ -570,7 +567,12 @@ function makePhraseExercise(div)
 	)
 	
 	var previousCounter = state.phraseCounter;
-	var answer;
+	var text = document.createElement("text");
+	var textContainer = document.createElement("span");
+	var pContainer = document.createElement("p");
+	div.appendChild(pContainer);
+	pContainer.appendChild(textContainer);
+	textContainer.appendChild(text);
 	form.onsubmit = function (event) {
 		event.preventDefault();
 		phraseInput.disabled = true;
@@ -583,14 +585,14 @@ function makePhraseExercise(div)
 					console.log(phraseInput.value);
 					console.log(phraseAnswers);
 					console.log(phrase);
-					answer = "correct";
+					text.innerText = "Правилен отговор!";
 				}
 				else
 				{
 					state.phrasesWrong.push(previousCounter);
 					state.wrongExercises.push({"index" : previousCounter, "phrase" : phrase, "exercise" : makePhraseExercise});
 					console.log(state.wrongExercises);
-					answer = "incorrect";
+					text.innerText = "Неправилно! Възможен верен отговор е:\n" + phraseAnswers[0];
 				}
 				button.disabled = true;
 			//	buttonContinue.disabled = false;
@@ -700,7 +702,7 @@ function showImages(div)
 	p.id = "imageContainer";
 	itemContainer.appendChild(p);
 	
-	// var unlock = 0;
+	var unlock = 0;
 	var words = [];
 	var incorrectWords = [];
 	var emptyJoin = [];
@@ -826,8 +828,12 @@ function showImages(div)
 				if(state.myCounter <= 1)
 				{
 					button.disabled = false;
-					state.myCounter++;
+					state.myCounter = 2;
 					console.log(state.myCounter);
+				}
+				if(unlock == 1)
+				{
+					label.removeEventListener('click', buttonContinuation);
 				}
 			}
 		);
@@ -850,13 +856,14 @@ function showImages(div)
 	button.textContent = "Провери";
 	button.onclick = function() 
 	{
-		var answerText = document.createElement("answerText");
+		var newLine = document.createElement("text");
+		newLine.innerText = '\n';
+		var answerText = document.createElement("text");
 		var answerTextContainer = document.createElement("p");
-		p.appendChild(answerText)
 		if(inps[correctWord].checked)
 		{
 			//incrementScore();
-			//unlock = 1;
+			unlock = 1;
 			console.log("correct");
 			answerText.innerText = "Правилно!";
 		}
@@ -868,6 +875,8 @@ function showImages(div)
 			answerText.innerText = "Неправилно. Верният отговор е " + "'" + word + "'";
 		}
 		
+		p.appendChild(newLine);
+		p.appendChild(answerText);
 		//label.removeEventListener('click', buttonContinuation());
 		button.disabled = true;
 		buttonC.disabled = false;
@@ -877,10 +886,10 @@ function showImages(div)
 	{
 		state.counter--;
 	}
+	clearButtonFinish();
 	//console.log(state.counter);
 	buttonC.onclick = function ()
 	{
-		
 		console.log(state.wrongExercises.length);
 		if(state.counter == 0 && !state.doWrongExercise)
 		{
@@ -927,6 +936,7 @@ function showImages(div)
 					console.log(level);
 					clearDiv(otherDiv);
 					state.cameFromExercise = true;
+					alert("Прибавихте резултат към текущия език!");
 					showLevel(div, level);
 					//checked = true;
 					/*var p = document.createElement("p");
@@ -1041,8 +1051,10 @@ function makeCheckboxes(phraseIndex, div)
 	form.onsubmit = function (event) {
 		event.preventDefault();
 		var correct = true;
-		var text;
+		var text = document.createElement("text");
 		var rightChecks = 0;
+		var wrongChecks = 0;
+		var textContainer = document.createElement("span"); 
 		for(var i = 0; i < checkboxes.length; i++)
 		{
 			checkboxes[i].disabled = true;
@@ -1071,6 +1083,7 @@ function makeCheckboxes(phraseIndex, div)
 				{
 					//incorrect answer was checked
 					//checkboxes[i].parentNode.style = "background: red;";
+					wrongChecks++;
 					correct = false;
 				}
 				else
@@ -1080,24 +1093,27 @@ function makeCheckboxes(phraseIndex, div)
 				}
 			}
 			
-			if(rightChecks == 2 && correct == true)
+			if((rightChecks == 2 || rightChecks == 1) && correct == true)
 			{
-				text = "Правилно! В тъмно зелено ";
+				text.innerText = "Правилно!";
 			}
-			else if(rightChecks == 1 && correct == true)
+			else if(rightChecks == 1 && correct == false && wrongChecks == 0)
 			{
-				text = "Правилно! ";
+				text.innerText = "Не избрахте всички възможни отговори. В червено е показан пропуснатият.";
 			}
-			else if(rightChecks == 1 && correct == false)
+			else if(rightChecks == 1 && correct == false && wrongChecks > 0)
 			{
-				text = "В цветно са показани верните отговори.";
+				text.innerText = "Неправилно. Избрахте верен и поне един грешен отговор.";
 			}
-			else if(correct == false)
+			else
 			{
-				text = "В цветно са показани верните отговори.";
+				text.innerText = "Неправилно!";
 			}
 			
-			
+			var answerContainer = document.createElement("p");
+			div.appendChild(answerContainer);
+			answerContainer.appendChild(textContainer);
+			textContainer.appendChild(text);
 			
 			
 			//console.log(checkboxes[i].checked);
@@ -1421,7 +1437,7 @@ function showProgress()
 					
 					languageNameText.innerText = "Език: " + languageName + "\n";
 					languageLevelText.innerText = "Ниво: " + state.progress[i].level + "\n";
-					languageSublevelText.innerText = "Подниво: " + state.progress[i].level +"\n";
+					languageSublevelText.innerText = "Подниво: " + state.progress[i].sublevel +"\n";
 					languageScoreText.innerText = "Резултат към този език: " + state.progress[i].score;
 					
 					p.appendChild(languageNameText);
@@ -1587,6 +1603,7 @@ function startExercises(div)
 							console.log(level);
 							clearDiv(otherDiv);
 							state.cameFromExercise = true;
+							alert("Прибавихте резултат към текущия език!");
 							showLevel(div, level);
 							//checked = true;
 							/*var p = document.createElement("p");
