@@ -214,6 +214,18 @@ function switchLanguageEn()//state
 					
 }
 
+document.onClick = function(e)
+{
+	if(e.target.id!="languageDropdown")
+	{
+		document.getElementById("languageDropdown").className = "dropdown-content hidden";
+	}
+	else
+	{
+		console.log("d");
+	}
+}
+
 function switchLanguageFr()
 {
 	clearButtonFinish();
@@ -1930,6 +1942,8 @@ function clearFields()
 	var userDaysField = document.getElementById("userDays"); 
 	userDaysField.innerText = "";
 }
+
+
 
 function showLogin(div)
 {

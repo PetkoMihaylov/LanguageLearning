@@ -818,7 +818,6 @@ function updateUserScoreAndLevel($username, $score_to_update, $language, $level,
 	if($sublevel < 5 && $sublevel == $userSublevel && $level == $userLevel)
 	{
 		$sublevel+=1;
-		$language_result = $db->query("UPDATE language SET sublevel = '$sublevel' WHERE userID = '$userID' and name = '$language'");
 		
 		$language_result = $db->query("UPDATE users SET sublevel = '$sublevel' WHERE id = '$userID' and language = '$language'");
 	}
@@ -829,7 +828,6 @@ function updateUserScoreAndLevel($username, $score_to_update, $language, $level,
 			$level+=1;
 			$sublevel = 1;
 			$language_result = $db->query("UPDATE language SET level = '$level' WHERE name = '$language' and userID = '$userID'");
-			$language_result = $db->query("UPDATE language SET sublevel = '$sublevel' WHERE name = '$language' and userID = '$userID'");
 			
 			$language_result = $db->query("UPDATE users SET level = '$level' WHERE language = '$language' and id = '$userID'");
 			$language_result = $db->query("UPDATE users SET sublevel = '$sublevel' WHERE language = '$language' and id = '$userID'");

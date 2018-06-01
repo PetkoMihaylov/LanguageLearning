@@ -209,6 +209,7 @@ function dbInit($password)
 								answer VARCHAR(256),
 								phraseId INT NOT NULL,
 								language VARCHAR(30) NOT NULL
+								#foreign key(phraseID) REFERENCE (od checkbox-phraseza)
 								)
 								"); */
 
@@ -435,11 +436,104 @@ function dbInit($password)
 	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1, level, sublevel, language) VALUES('bâtiment','voiture','cheval','1','1','$language')");
 	$insert = $db->query("INSERT INTO image_words(word, incorrect_word0, incorrect_word1,level, sublevel, language) VALUES('arbre','plante','lapin','1','1','$language')");
 	
-	
+	#words
 	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('lapin','1','1','$language')");
 	$word_id = $db->insert_id;
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('заек','$word_id','$language')");
 	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('зайче','$word_id','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('bleu','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('син','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('синьо','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('poupée','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('кукла','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('cheval','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('кон','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('mur','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('стена','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('bâtiment','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('сграда','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('постройка','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('arbre','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('дърво','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('je','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('аз','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('j''étais','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('аз бях','$word_id','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('étais','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('бях','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('беше','$word_id','$language')");
+	
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('fille','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('момиче','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('la fille','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('момичето','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('le garçon','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('момчето','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('aujourd''hui','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('днес','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('dehors','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('навън','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('отвън','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('est','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('je suis','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('аз съм','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('съм','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('tu es','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('elle est','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тя е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('il est','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('той е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('c''est','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('то е','$word_id','$language')");
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('това е','$word_id','$language')");
+	
+	$insert = $db->query("INSERT INTO words(word, level, sublevel, language) VALUES('ici','1','1','$language')");
+	$word_id = $db->insert_id;
+	$insert = $db->query("INSERT INTO words_translations(word, wordId, from_language) VALUES('тук','$word_id','$language')");
 	
 	
 	
@@ -450,7 +544,7 @@ function dbInit($password)
 	$password = "vasko3";
 	$password_hash = hash("sha512", $password . DB_SALT);
 	$db->query("INSERT INTO users (username, email, password, language, points, score, days_played, level, sublevel) VALUES ('Vasko2', 'vasko@mail.com', '$password_hash', 'en', 0, 0, 0, 1, 3);");
-	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 1, 0, 1, 3)");
+	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('en', 1, 20, 2, 4)");
 	$db->query("INSERT INTO language(name, userID, score, level, sublevel) VALUES ('fr', 1, 0, 1, 3)");
 	
 	$password = "adminadmin";
