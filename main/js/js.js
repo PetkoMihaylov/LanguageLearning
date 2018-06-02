@@ -30,7 +30,7 @@ calculate().done(function (result) {
 }) */
 	
 window.onbeforeunload = function() {
-  return "Data will be lost if you leave the page, are you sure?";
+return "Data will be lost if you leave the page, are you sure?";
 };
 
 function getUserLanguage(callback)
@@ -286,9 +286,14 @@ function rabbit(){
 		}
 	}
 }
+function showButtonContinue()
+{
+	state.button.style.visibility = "visible";
+}
 
 function makeListeningExercise(div)
 {
+	showButtonContinue();
 	console.log(state.wrongExercises);
 	var p = document.createElement("p");
 	div.appendChild(p);
@@ -457,7 +462,8 @@ function makeListeningExercise(div)
 }
 
 function makePhraseExercise(div)
-{
+{ 
+	showButtonContinue();
 	var p = document.createElement("p");
 	div.appendChild(p);
 	console.log(state.wrongExercises);
@@ -640,22 +646,6 @@ function getPhrase(div)
 		var phrase = state.phrases.pop();
 		makeCheckboxes(phrase, div);
 	}
-	/*var phrase;
-	sendCommand(["get-phrase"], function(r) {
-		var phrase = r;
-		state.phrase = phrase;
-		phrase = state.phrase.pop();
-		console.log(state.phrase);
-		makePhraseExercise(phrase, div); 
-		state.phrases = r;
-		console.log(r);
-		//console.log(state.phrases);
-		var phrase = state.phrases;
-		makePhraseExercise(phrase, div);
-				
-	});
-	*/
-	//console.log(state.phrase);
 }
 
 function onSubmit()
@@ -663,33 +653,6 @@ function onSubmit()
 	alert(0);
 }
 
-/* function callback(response)
-{
-	var div = document.createElement("div");
-	div.className = "correctionbar";
-	document.body.appendChild(div);
-	
-	if(result.response)
-	{
-		div.className += " correct"; //
-		div.textContent = "You are correct";
-	}
-	else
-	{
-		div.className += " incorrect";
-		div.textContent = "You are not correct";
-	}
-	
-	var button = document.createElement("button");
-	button.className = "btn btn-secondary";
-	div.appendChild(button);
-	button.innerText="Continue";
-	button.onclick = function()
-	{
-		getPhrase();
-	}
-	
-} */
 function showImages(div)
 {
 	state.myCounter = 0;
@@ -886,11 +849,26 @@ function showImages(div)
 	{
 		state.counter--;
 	}
-	clearButtonFinish();
+	if(state.wrongExercises != 0)
+	{
+		console.log("vleze2");
+		var otherDiv = document.getElementById("otherDiv");
+		if (typeof(otherDiv) != 'undefined' && otherDiv != null)
+		{
+			var but = document.getElementById("theContinueButton");
+			console.log("vlezepak, ama tupiq button ne se smenq");
+			but.style.visibility = "hidden";
+		}
+	}
+	else
+	{
+		clearButtonFinish();
+	}
 	//console.log(state.counter);
 	buttonC.onclick = function ()
 	{
 		console.log(state.wrongExercises.length);
+		
 		if(state.counter == 0 && !state.doWrongExercise)
 		{
 			console.log("continuing");
@@ -909,10 +887,11 @@ function showImages(div)
 		}
 		else
 		{
-			button.innerText = "Finish";
-			button.style="bottom: 30%, right: 10%";
+			clearButtonFinish();
+			buttonC.innerText = "Finish";
+			buttonC.style="bottom: 30%, right: 10%";
 			
-			button.addEventListener (
+			buttonC.addEventListener (
 				'click',
 				function(e)
 				{
@@ -925,19 +904,20 @@ function showImages(div)
 							state.userAttributes = r;
 						},false
 					);
-							
+					clearButtonFinish();
+					buttonC.disabled = false;
 					var cookieExists = getCookie("playedToday");
 					if(!cookieExists)
 					{
-						createCookiePlayed("playedToday", 1 );
+						createCookiePlayed("playedToday", 1);
 						state.playedToday = true;
 					}
-					clearDiv(div);
+					clearDiv(container);
 					console.log(level);
-					clearDiv(otherDiv);
+					clearButtonFinish();
 					state.cameFromExercise = true;
 					alert("Прибавихте резултат към текущия език!");
-					showLevel(div, level);
+					showLevel(container, level);
 					//checked = true;
 					/*var p = document.createElement("p");
 					p.className = "photo-caption";
@@ -965,6 +945,7 @@ function makeCheckboxes(phraseIndex, div)
 	{
 		
 	} */
+	showButtonContinue();
 	var phrase = state.exercises.checkbox_phrases[phraseIndex];
 	console.log(phrase);
 	var correct_answers = phrase.answers;
@@ -1168,7 +1149,7 @@ function shuffle(array)
 	return array;
 }
 
-function addPhrasesMode(div)
+/* function addPhrasesMode(div)
 {
 	var form = document.createElement("form");
 	var phraseInput = document.createElement("textarea");
@@ -1223,7 +1204,7 @@ function addPhrasesMode(div)
 		console.log(answers);
 		sendCommand(["add-phrase", phraseInput.value, levelInput.value, subLevelInput.value].concat(answers), undefined, false);
 	}
-}
+} */
 
 
 function checkboxesFour(div)
@@ -1310,7 +1291,7 @@ function registrationForm(div)
 						alert("Registration failed, try again!");
 						alert("Perhaps try a different username?");
 					}
-				}, false);
+				});
 		}
 			
 	};
@@ -1361,7 +1342,7 @@ function getPhraseComments(phraseId, div)
 			document.body.removeChild(blackfield);
 			getPhraseComments(phraseId, div);
 			
-		}, false
+		}
 		
 		);
 	}
@@ -1391,7 +1372,23 @@ function getPhraseComments(phraseId, div)
 	
 	
 }
-
+function showAbout()
+{
+	var div = document.querySelector('body>main');
+	clearDiv(div);
+	clearButtonFinish();
+	var p = document.createElement("p");
+	div.appendChild(p);
+	var textContainer = document.createElement("span");
+	var text = document.createElement("text");
+	p.appendChild(textContainer);
+	textContainer.appendChild(text);
+	var otherText = document.createElement("text");
+	textContainer.appendChild(otherText);
+	otherText.innerText = "Désolé à tous!";
+	otherText.style = "float: right; margin-right: 50px; font-size: 30px;";
+	text.innerText = "Това приложение има за цел да спомогне на хората, които не разбират друг език освен български, да научат постепенно чрез упражнения и представяне на думи избрания чужд език. \n За момента има два езика - английски и френски - и работят първите две поднива на първото ниво, тъй като в базата данни няма въведена информация за другите." + "\n";
+}
 function showHome()
 {
 	clearButtonFinish();
@@ -1483,8 +1480,7 @@ function showWords()
 					levelsContainer.id = "levelsContainer";
 					levelsContainer.innerText = "Ниво: " + state.words[i].level + " | " + "Подниво: " + state.words[i].sublevel;
 					p.appendChild(spanContainer);
-					var comma = document.createElement("text");
-					comma.innerText = ", "
+					
 					var textDivision = document.createElement("text");
 					textDivision.innerText = " | ";
 					spanContainer.appendChild(textWord);
@@ -1493,14 +1489,18 @@ function showWords()
 					for(var j = 0; state.words[i].translation.length > j; j++)
 					{
 						var textTranslation = document.createElement("text");
-						spanContainer.appendChild(textTranslation);
 						textTranslation.innerText = state.words[i].translation[j].word;
-						if(state.words[i].translation.length > j +1)
+						spanContainer.appendChild(textTranslation);
+						if(j + 1 < state.words[i].translation.length)
 						{
+							var comma = document.createElement("text");
+							comma.innerText = ", ";
 							spanContainer.appendChild(comma);
 						}
-						p.appendChild(levelsContainer);
+						console.log(state.words[i].translation.length);
 					}
+					p.appendChild(levelsContainer);
+					
 				}
 			}
 		);
@@ -1540,11 +1540,12 @@ function startExercises(div)
 		/*var mainElement = document.getElementById("main");
 		mainElement.appendChild(otherDiv);*/ //to work without the "пропусни" button
 		var button = document.createElement("button");
+		button.id = "theContinueButton";
 		otherDiv.appendChild(button);
 		otherDiv.id = "otherDiv";
 		otherDiv.style="align-items: center; justify-content: center;"
 		document.body.appendChild(otherDiv);
-		button.innerText = "Продължи";
+		button.innerText = "Продължиs";
 		button.style = "position: absolute; float: right;";
 		state.exerciseCounter = 0;
 		button.className = "btn btn-secondary";
@@ -1553,7 +1554,6 @@ function startExercises(div)
 		button.onclick = function() {
 				//clearDivs();
 				state.button.disabled = true;
-				clearDiv(div);
 				var exercise = exercises.pop();
 				state.exerciseCounter++;
 				button.className = "btn btn-secondary";
@@ -1564,11 +1564,13 @@ function startExercises(div)
 				console.log(exercise);
 				if(exercise && state.counter == 0)
 				{
+					clearDiv(div);
 					console.log(state.counter);
 					exercise(div);
 				}
 				else if(state.wrongExercises.length > 0)
 				{
+					clearDiv(div);
 					console.log("happy");
 					startWrongExercises(div);
 				}
@@ -1576,6 +1578,7 @@ function startExercises(div)
 				{
 					console.log("mort");
 					state.button.disabled = false;
+					button.disabled = false;
 					button.innerText = "Finish";
 					button.style="bottom: 30%, right: 10%";
 					
@@ -1592,7 +1595,6 @@ function startExercises(div)
 									state.userAttributes = r;
 								},false
 							);
-									
 							var cookieExists = getCookie("playedToday");
 							if(!cookieExists)
 							{
@@ -1601,7 +1603,7 @@ function startExercises(div)
 							}
 							clearDiv(div);
 							console.log(level);
-							clearDiv(otherDiv);
+							clearButtonFinish();
 							state.cameFromExercise = true;
 							alert("Прибавихте резултат към текущия език!");
 							showLevel(div, level);
@@ -1637,6 +1639,7 @@ function showLevel(div, level)
 	var ul = document.createElement("ul");
 	div.appendChild(ul);
 	//state.level = level;
+	//var sub = 3;
 	for(var i = 0; i < 5; i++)
 	{
 		var li = document.createElement("li");
@@ -1653,53 +1656,68 @@ function showLevel(div, level)
 		img.height = 120;
 		img.width = 120;
 		a.appendChild(img);
-		if(state.userInfo.sublevel > i)
+		
+		
+		console.log(level);
+		//console.log(sub);
+		//console.log(state.userInfo.sublevel);
+		if(state.userInfo.sublevel > i && level == 1)
 		{
-			a.onclick = function (event){
-				event.preventDefault();
-				clearDiv(div);
-				console.log(globalLanguage);
-				globalLanguage = globalLanguage.replace(/(\r\n|\n|\r)/gm, "");
-				globalLanguage = globalLanguage.replace(/["']/g, "");
-				state.level = level;
-				state.sublevel = this.sublevel;
-				sendCommand(
-					["get-level", `${level}`, `${this.sublevel}`, globalLanguage],
-					function (r){
-						console.log(r);
-						state.exercises = r;
-						state.checkboxPhrases = [];
-						state.radioPhrases = [];
-						state.phrases = [];
-						state.listeningPhrases = [];
-						state.imagePhrases=[];
-						clearDiv(div);
-						
-						//var translationWords = getWords(level);
-						
-						state.wrongExercises = [];
-						state.doWrongExercise = false;
-						console.log(state.wrongExercises);
-						state.imageCount = state.exercises.images.length;
-						state.counter = state.exercises.images.length;
-						console.log(state.exercises.checkbox_phrases.length);
-						state.checkboxCounter = 0;
-						state.phraseCounter = 0;
-						state.listeningCounter = 0;
-						state.radioCounter = 0;
-						state.useWrongImages = false;
-						//state.phrase.length = 0;
-						state.imagesWrong = [];
-						state.phrasesWrong = [];
-						state.checkboxesWrong = [];
-						state.radiosWrong = [];
-						state.listeningWrong = [];
-						state.phrases = [];
-						
-						startExercises(div);
-					}
-				);
-			};
+			if(a.sublevel < 3)
+			{
+				a.onclick = function (event){
+					event.preventDefault();
+					clearDiv(div);
+					console.log(globalLanguage);
+					globalLanguage = globalLanguage.replace(/(\r\n|\n|\r)/gm, "");
+					globalLanguage = globalLanguage.replace(/["']/g, "");
+					state.level = level;
+					state.sublevel = this.sublevel;
+					sendCommand(
+						["get-level", `${level}`, `${this.sublevel}`, globalLanguage],
+						function (r){
+							console.log(r);
+							state.exercises = r;
+							state.checkboxPhrases = [];
+							state.radioPhrases = [];
+							state.phrases = [];
+							state.listeningPhrases = [];
+							state.imagePhrases=[];
+							clearDiv(div);
+							
+							//var translationWords = getWords(level);
+							
+							state.wrongExercises = [];
+							state.doWrongExercise = false;
+							console.log(state.wrongExercises);
+							state.imageCount = state.exercises.images.length;
+							state.counter = state.exercises.images.length;
+							console.log(state.exercises.checkbox_phrases.length);
+							state.checkboxCounter = 0;
+							state.phraseCounter = 0;
+							state.listeningCounter = 0;
+							state.radioCounter = 0;
+							state.useWrongImages = false;
+							//state.phrase.length = 0;
+							state.imagesWrong = [];
+							state.phrasesWrong = [];
+							state.checkboxesWrong = [];
+							state.radiosWrong = [];
+							state.listeningWrong = [];
+							state.phrases = [];
+							
+							startExercises(div);
+						}
+					);
+				};
+			}
+			else
+			{
+				a.onclick = function()
+				{
+					alert("Нивото не е готово!");
+				}
+			}
 		}
 		else
 		{
@@ -1881,7 +1899,7 @@ function resetAtMidnight() {
 				function(r){
 					console.log(r);
 					//state.lostStreak = true;
-				}, false
+				}
 			);
 			getUserInfo(function()
 			{
@@ -1907,8 +1925,8 @@ function createCookiePlayed(name, value, path) {
 	console.log(getCookie("playedToday"));
 }
 
-function dateDaysPlayed()
-{
+//function dateDaysPlayed()
+//{
 	/* var start = moment().startOf('day');
 	var time = moment();
 	var end = moment().endOf('day'); */
@@ -1927,13 +1945,13 @@ function dateDaysPlayed()
 		sendCommand(["update-date-user", state.username, daysPlayed],
 			function(r){
 				console.log(r);
-			}, false
+			}
 		);
 	)
 	var millisecondsPerDay = 24 * 60 * 60 * 1000;
 	var daysSince = Math.floor(difference / millisecondsPerDay
 	alert(daysSince); // */
-}
+//}
 
 function getUserInfo(callback) //level, sublevel, consecutive days, fiskato
 {
@@ -2075,11 +2093,6 @@ function showLogin(div)
 	
 }
 
-/* function addNextButton()
-{
-	
-} */
-
 
 
 
@@ -2138,7 +2151,6 @@ function main()
 						}
 					);
 					
-					dateDaysPlayed();
 					state.username = username;
 					console.log(state.username);
 					console.log(globalLanguage);
@@ -2187,34 +2199,6 @@ function main()
 	
 	return;
 }
-
-/* function date()
-{
-	var today = new Date();
-	var dd = today.getDate();
-	var mm = today.getMonth()+1; //January is 0!
-	var yyyy = today.getFullYear();
-
-	if(dd<10) {
-		dd = '0'+dd
-	} 
-
-	if(mm<10) {
-		mm = '0'+mm
-	}
-	
-
-	today = mm + '/' + dd + '/' + yyyy;
-	dd++;
-	var yesterday = new Date(Date.now() - 86400000);
-	var tomorrow = new Date(Date.now() + 86400000);
-	var currentDate = new Date();
-	currentDate.setDate(currentDate.getDate() + 1);
-	console.log(currentDate);
-	console.log(tomorrow);
-	
-	return today;
-} */
 
 
 window.onload = main;

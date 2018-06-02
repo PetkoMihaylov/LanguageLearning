@@ -8,6 +8,7 @@ define("DB_SALT", "1234rfkgjalvj0q4wjpvaFAFA!@$%kdv;awij09w4fskfer;vner;jlvnaer-
 
 function dbConnect()
 {
+	
 	$db = new mysqli("localhost", "root", "root", "words");
 	if(!$db)
 	{
@@ -20,6 +21,8 @@ function dbConnect()
 
 function getLevel($level, $sublevel, $language)
 {
+	
+	
 	$db = dbConnect();
 	$level = $db->real_escape_string ($level);
 	$sublevel = $db->real_escape_string ($sublevel);
@@ -73,6 +76,7 @@ function getLevel($level, $sublevel, $language)
 		$words_translations_result = $db->query("SELECT word FROM words_translations WHERE  from_language = '$language' and wordID = '$wordID'");
 		$words[$i]['translation'] = $words_translations_result->fetch_all(MYSQLI_ASSOC);
 	}
+	
 
 	$exercises = [
 		"images" => $images,
@@ -82,7 +86,7 @@ function getLevel($level, $sublevel, $language)
 		"checkbox_phrases" => $checkbox_phrases,
 		"words" => $words
 	];
-	
+	$db->close();
 	return $exercises;
 }
 
@@ -95,10 +99,12 @@ function login($username, $password)
 	$login = $result->fetch_all(MYSQLI_ASSOC);
 	if($login)
 	{
+		$db->close();
 		return true;
 	}
 	else
 	{
+		$db->close();
 		return false;
 	}
 }
@@ -108,6 +114,7 @@ function getUserLevel($username)
 	$username = $db->real_escape_string ($username);
 	$result = $db->query("SELECT level FROM users WHERE username='$username'");
 	$userLevel = $result->fetch_all(MYSQLI_ASSOC)[0]["level"];
+	$db->close();
 	return $userLevel;
 }
 
@@ -141,6 +148,7 @@ function getUserInfo($username, $language)
 		"points" => $points,
 		"score" => $score,
 	];
+	$db->close();
 	
 	return $userInfo;
 	
@@ -180,12 +188,12 @@ function registerUser($username, $email, $password)
 			return false;
 		}
 	}
-	
+	$db->close();
 	return true;
 	
 }
 
-function getPhrase()
+/* function getPhrase()
 {
 	$db = dbConnect();
 	$limit = 1;
@@ -253,10 +261,10 @@ function getWordCheckbox($limit)
 	$result = ["correct_answers"=>$correct_answers,
 			   "incorrect_answers"=>$incorrect_answers];
 	return $result;
-	*/
-}
 
-function addPhrase($phrase, $level, $sublevel, $answers)
+//}
+*/
+/* function addPhrase($phrase, $level, $sublevel, $answers)
 {
 	$db = dbConnect();
 	//check  if phrase already exists;
@@ -275,7 +283,7 @@ function addPhrase($phrase, $level, $sublevel, $answers)
 	}
 	
 	$db->close();
-}
+} */
 
 function check_words($answerWords, $inputWords, $typo, &$correct)
 {
@@ -668,15 +676,16 @@ function checkPhrase($input, $answers, $phrase)
 }
 
 
-function incrementScore($username)
+/* function incrementScore($username)
 {
 	$db = $dbConnect();
 	$result = $db->query("SELECT score FROM users WHERE username = '$username'");
 	$score = $result->fetch_assoc()["score"];
 	$score += 1;
 	$db->query("UPDATE users SET score = $score WHERE username = '$username'");
+	$db->close();
 }
-
+ */
 function postComment($content, $username, $phraseID)
 {
 	$db = dbConnect();
@@ -699,7 +708,7 @@ function postComment($content, $username, $phraseID)
 	{
 		return false;
 	}
-	
+	$db->close();
 	
 }
 
@@ -726,6 +735,7 @@ function getPhraseComments($phraseId, $from, $commentCount)
 		$username = $result->fetch_all(MYSQLI_ASSOC)[0]["username"];
 		$comments[$i]["username"] = $username;
 	}
+	$db->close();
 	return $comments;
 }
 
@@ -754,6 +764,7 @@ function changeUserLanguage($language, $username)
 	{
 		return false;
 	}
+	$db->close();
 	return true;
 	
 }
@@ -776,7 +787,7 @@ function getWordsUser($username, $language, $level, $sublevel)
 		$words_translations_result = $db->query("SELECT word FROM words_translations WHERE  from_language = '$language' and wordID = '$wordID'");
 		$words[$i]['translation'] = $words_translations_result->fetch_all(MYSQLI_ASSOC);
 	}
-	
+	$db->close();
 	//print_r($words);
 	return $words;	
 }
@@ -791,7 +802,7 @@ function getUserLanguage($username)
 		print("Error");
 	}
 	$language = $result->fetch_all(MYSQLI_ASSOC)[0]["language"];
-	
+	$db->close();
 	return $language;
 }
 
@@ -870,7 +881,8 @@ function updateUserScoreAndLevel($username, $score_to_update, $language, $level,
 	{
 		print("Error");
 		return false;
-	}
+	
+	$db->close();
 	return $userScore;
 }
 function getUserProgress($username, $language)
@@ -884,7 +896,7 @@ function getUserProgress($username, $language)
 	
 	$language_result = $db->query("SELECT * FROM language WHERE userID = '$userID'");
 	$language = $language_result->fetch_all(MYSQLI_ASSOC);
-	
+	$db->close();
 	return $language;
 }
 
@@ -921,6 +933,7 @@ function updateDateUser($username, $days_played_to_add)
 		}
 		return true;
 	}
+	$db->close();
 }
 /*
 $db = new mysqli("localhost", "root", "root", "words");
